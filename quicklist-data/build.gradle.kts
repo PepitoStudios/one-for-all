@@ -1,7 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp") version "1.6.10-1.0.2"
+    id("com.google.devtools.ksp") version Versions.ksp
     id("kotlin-kapt")
 }
 
@@ -15,13 +15,21 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        ksp {
+            this.arg(
+                "room.schemaLocation",
+                "$projectDir/schemas".toString()
+            )
+        }
     }
 
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
         }
     }
@@ -53,11 +61,4 @@ dependencies {
     ksp(Room.compiler)
     implementation(Room.ktx)
     testImplementation(Room.testing)
-
-
-
-
-
-
-
 }

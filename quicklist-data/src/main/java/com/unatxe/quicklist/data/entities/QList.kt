@@ -6,6 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "list_table")
 data class QList(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey(autoGenerate = true)private val id: Int,
     @ColumnInfo(name = "name") val name: String,
-)
+) {
+    public fun getId(): Int {
+        return id
+    }
+}

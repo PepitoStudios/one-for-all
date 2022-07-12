@@ -1,9 +1,9 @@
 buildscript {
 
     repositories {
-        // Check that you have Google's Maven repository (if not, add it).
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
 
     dependencies {
@@ -14,13 +14,15 @@ buildscript {
         classpath(BuildPlugins.hilt)
         classpath(BuildPlugins.googleServices)
     }
-} // Top-level build file where you can add configuration options common to all sub-projects/modules.
+}
+
 plugins {
     id("com.android.application") version Versions.gradle apply false
     id("com.android.library") version Versions.gradle apply false
     id("com.google.gms.google-services") version Versions.googleServices apply false
     id("org.jetbrains.kotlin.android") version Versions.kotlin apply false
     id("org.jetbrains.kotlin.jvm") version Versions.kotlin apply false
+    id("com.github.ben-manes.versions") version "0.42.0"
     // id 'org.jmailen.kotlinter' version "3.10.0" apply false
 }
 

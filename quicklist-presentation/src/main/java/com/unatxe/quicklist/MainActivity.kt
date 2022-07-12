@@ -14,18 +14,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        /*DaggerDataComponent.builder().context(applicationContext)
-            .appDependencies(
-                EntryPointAccessors.fromApplication(
-                    applicationContext,
-                    DataModuleDependencies::class.java
-                ),
-                EntryPointAccessors.fromApplication(
-                    applicationContext,
-                    DomainModuleDependencies::class.java
-                )
-            ).build().inject(this)*/
-
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContent {

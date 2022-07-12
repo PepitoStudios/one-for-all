@@ -6,7 +6,7 @@ object ConfigData {
     const val versionCode = 1
     const val versionName = "1.0"
     const val jvmVersion = "11"
-    const val gradle = "7.5-rc-2"
+    const val gradle = "7.5-rc-5"
 }
 
 object SonarCloud {

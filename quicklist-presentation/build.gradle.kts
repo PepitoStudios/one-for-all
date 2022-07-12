@@ -44,7 +44,8 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
         }
@@ -115,7 +116,6 @@ dependencies {
     implementation(project(":quicklist-data"))
 
     implementation(Room.runtime)
-
 }
 
 sonarqube {
@@ -130,7 +130,6 @@ kapt {
     correctErrorTypes = true
 }
 
-
 task<Wrapper>("wrapper") {
     gradleVersion = ConfigData.gradle
 }
@@ -138,6 +137,7 @@ task<Wrapper>("wrapper") {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = ConfigData.jvmVersion
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
 }
 
