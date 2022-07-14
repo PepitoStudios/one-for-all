@@ -3,7 +3,10 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version Versions.ksp
     id("kotlin-kapt")
+    id("jacoco")
 }
+
+apply(from = "../jacoco.gradle.kts")
 
 android {
     namespace = "com.unatxe.quicklist.data"
@@ -13,7 +16,7 @@ android {
         minSdk = ConfigData.minSdkVersion
         targetSdk = ConfigData.targetSdkVersion
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.unatxe.quicklist.data.CustomTestRunner"
         consumerProguardFiles("consumer-rules.pro")
 
         ksp {
@@ -31,6 +34,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        getByName("debug") {
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
         }
     }
     compileOptions {
@@ -51,6 +58,8 @@ dependencies {
     testImplementation(Testing.jUnit)
     androidTestImplementation(Testing.extJUnit)
     androidTestImplementation(Testing.espressoCore)
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.38.1")
+    kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.38.1")
 
     implementation(GeneralDependencies.hilt)
     kapt(GeneralDependencies.hiltCompiler)

@@ -57,6 +57,7 @@ dependencies {
     implementation(Compose.ui)
     implementation(Compose.uiTollingPreview)
     implementation(Compose.material3)
+    implementation("androidx.compose.material:material:1.1.1")
     testImplementation(Testing.jUnit)
     androidTestImplementation(Testing.extJUnit)
     androidTestImplementation(Testing.espressoCore)

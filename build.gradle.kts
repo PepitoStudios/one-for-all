@@ -13,6 +13,7 @@ buildscript {
         classpath(BuildPlugins.firebasePerf)
         classpath(BuildPlugins.hilt)
         classpath(BuildPlugins.googleServices)
+        classpath("org.jacoco:org.jacoco.core:0.8.8")
     }
 }
 
@@ -29,3 +30,7 @@ plugins {
 tasks.register("clean", Delete::class) {
     delete(rootProject.buildDir)
 }
+
+
+
+

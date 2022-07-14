@@ -9,40 +9,27 @@ import com.unatxe.quicklist.data.repositories.ListRepositoryImpl
 import com.unatxe.quicklist.domain.repository.QListRepository
 import dagger.Module
 import dagger.Provides
-import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dagger.hilt.testing.TestInstallIn
 import javax.inject.Provider
+import javax.inject.Singleton
 
 @Module
-@InstallIn(SingletonComponent::class)
-object DatabaseModule {
+@TestInstallIn(
+    components = [SingletonComponent::class],
+    replaces = [DatabaseModule::class]
+)
+object TestDatabaseModule {
 
-    @Volatile
-    private var INSTANCE: QuickListDatabase? = null
-
-    fun getInstance(@ApplicationContext applicationContext: Context): QuickListDatabase =
-        synchronized(this) {
-            INSTANCE ?: buildDatabase(applicationContext).also { INSTANCE = it }
-        }
-
+    @Singleton
     @Provides
-    fun provideDatabase
+    fun provideDatabaseFake
     (@ApplicationContext applicationContext: Context): QuickListDatabase {
-        return getInstance(applicationContext)
-    }
-
-    private fun buildDatabase(@ApplicationContext applicationContext: Context): QuickListDatabase {
-        assert(Looper.getMainLooper() != Looper.myLooper())
-
-        return Room.databaseBuilder(
+        return Room.inMemoryDatabaseBuilder(
             applicationContext,
-            QuickListDatabase::class.java,
-            "list_table"
-        ).build()/*.createFromAsset("list_table.db")
-            .build().also {
-                it.query("select 1", null)
-            }*/
+            QuickListDatabase::class.java
+        ).build()
     }
 
     @Provides
