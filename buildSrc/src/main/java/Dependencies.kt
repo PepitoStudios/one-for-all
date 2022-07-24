@@ -54,6 +54,9 @@ object GeneralDependencies {
         Versions.coroutines
     const val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:" +
         Versions.coroutines
+
+    const val androidXNavigationCompose = "androidx.navigation:navigation-compose:" + Versions.androidXNavitationCompose
+    const val androidXHiltNavigationCompose =  "androidx.hilt:hilt-navigation-compose:${Versions.androidXHiltNavitationCompose}"
 }
 
 object Room {

@@ -39,7 +39,7 @@ object DatabaseModule {
             applicationContext,
             QuickListDatabase::class.java,
             "list_table"
-        ).build()/*.createFromAsset("list_table.db")
+        ).createFromAsset("list_table.db").build()/*.createFromAsset("list_table.db")
             .build().also {
                 it.query("select 1", null)
             }*/

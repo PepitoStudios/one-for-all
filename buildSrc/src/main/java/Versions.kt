@@ -14,6 +14,8 @@ object Versions {
     const val expressoCore = "3.4.0"
     const val androidXCore = "1.8.0"
     const val androidXLifecyle = "2.6.0-alpha01"
+    const val androidXNavitationCompose = "2.5.0"
+    const val androidXHiltNavitationCompose = "1.0.0"
     const val androidXSplashScreen = "1.0.0-rc01"
     const val room = "2.4.2"
     const val coroutines = "1.6.3"

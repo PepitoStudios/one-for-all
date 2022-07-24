@@ -86,6 +86,8 @@ dependencies {
     implementation(GeneralDependencies.androidXLifecycle)
     implementation(GeneralDependencies.androidXLifecycleLiveData)
     implementation(GeneralDependencies.androidXSplashScreen)
+    implementation(GeneralDependencies.androidXNavigationCompose)
+    implementation(GeneralDependencies.androidXHiltNavigationCompose)
     implementation(GeneralDependencies.coroutinesAndroid)
 
     testImplementation(Testing.jUnit)
