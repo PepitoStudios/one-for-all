@@ -4,7 +4,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.firebase.crashlytics")
     id("com.google.firebase.firebase-perf")
-    id("org.sonarqube") version "3.3"
     // id 'org.jmailen.kotlinter'
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
@@ -48,6 +47,10 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+        }
+        getByName("debug") {
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
         }
     }
 
@@ -121,14 +124,6 @@ dependencies {
     implementation(Room.runtime)
 }
 
-sonarqube {
-    properties {
-        property("sonar.projectKey", SonarCloud.projectKey)
-        property("sonar.organization", SonarCloud.organization)
-        property("sonar.host.url", SonarCloud.host)
-    }
-}
-
 kapt {
     correctErrorTypes = true
 }
@@ -145,3 +140,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 }
 
 tasks.register("prepareKotlinBuildScriptModel") {}
+
+tasks.register("makeTest") {
+    dependsOn("testDebugUnitTest")
+    dependsOn("connectedDebugAndroidTest")
+}
