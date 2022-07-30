@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "235704608815",
+    "project_id": "vssrealkone",
+    "storage_bucket": "vssrealkone.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235704608815:android:2ab921f4ace9428a687eda",
+        "android_client_info": {
+          "package_name": "com.unatxe.quicklist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "235704608815-l6t1mc9lfufgomu0773kc2i7pmuhsn3u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFymOZyvnMSRkqpub6B0T7ffJhaky5QiE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "235704608815-l6t1mc9lfufgomu0773kc2i7pmuhsn3u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

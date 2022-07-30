@@ -23,10 +23,33 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-)
+    primary = Blue40,
+    onPrimary = Neutral100,
+    primaryContainer = Blue90,
+    onPrimaryContainer = Blue10,
+    secondary = Green60,
+    onSecondary = Neutral100,
+    secondaryContainer = Green90,
+    onSecondaryContainer = Green10,
+    tertiary = Brown40,
+    onTertiary = Neutral100,
+    tertiaryContainer = Brown90,
+    onTertiaryContainer = Brown10,
+    error = Red40,
+    onError = Neutral100,
+    errorContainer = Red90,
+    onErrorContainer = Red10,
+    background = Neutral99,
+    onBackground = Neutral10,
+    surface = Neutral99,
+    onSurface = Neutral10,
+    surfaceVariant = NeutralVariant90,
+    onSurfaceVariant = NeutralVariant30,
+    outline = NeutralVariant50,
+    inverseOnSurface = LightInverseOnSurface,
+    inverseSurface = LightInverseSurface,
+    inversePrimary = LightInversePrimary,
+    surfaceTint = LightSurfaceTint)
 
 @Composable
 fun One4allTheme(

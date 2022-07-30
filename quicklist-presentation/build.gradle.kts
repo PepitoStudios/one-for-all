@@ -110,6 +110,7 @@ dependencies {
     implementation(Compose.activityCompose)
     implementation(Compose.viewModelCompose)
     implementation(Compose.runtimeLiveData)
+    implementation(Compose.animationNavigationCompose)
 
     implementation(GeneralDependencies.hilt)
     kapt(GeneralDependencies.hiltCompiler)

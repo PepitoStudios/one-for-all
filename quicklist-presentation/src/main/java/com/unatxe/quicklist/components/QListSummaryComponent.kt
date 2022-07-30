@@ -1,4 +1,4 @@
-package com.unatxe.quicklist.features.mainScreen.components
+package com.unatxe.quicklist.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,12 +20,14 @@ fun QListSummaryComponent(qList: QList, onDetailListClick: (listId: Int) -> Unit
         .clickable {
             onDetailListClick(qList.id)
         }
-        .fillMaxWidth()
-        .width(100.dp)) {
+        .fillMaxWidth()) {
         Column(Modifier
                 .padding(all = 5.dp)
         ) {
-            Text(qList.name)
+            Column() {
+                Text(qList.name)
+            }
+
         }
     }
 }
