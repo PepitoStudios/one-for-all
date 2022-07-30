@@ -1,3 +1,5 @@
+import java.util.*
+
 object ConfigData {
     const val compileSdkVersion = 32
     const val minSdkVersion = 21
@@ -10,7 +12,9 @@ object ConfigData {
 }
 
 object SonarCloud {
+
     const val projectKey = "PepitoStudios_one-for-all"
     const val organization = "pepitostudios"
     const val host = "https://sonarcloud.io"
+    const val projectName = "one-for-all"
 }

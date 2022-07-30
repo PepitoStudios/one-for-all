@@ -65,7 +65,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     group = jacocoGroup
     description = "Code coverage report for both Android and Unit tests."
     dependsOn("testDebugUnitTest")
-    dependsOn("createDebugCoverageReport")
+    //dependsOn("createDebugCoverageReport")
     reports {
         reports()
     }

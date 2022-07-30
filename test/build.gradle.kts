@@ -65,3 +65,7 @@ dependencies {
     debugImplementation(Compose.uiTolling)
     debugImplementation(Compose.uiTestManifest)
 }
+
+sonarqube {
+    isSkipProject = true
+}

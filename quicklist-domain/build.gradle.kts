@@ -20,3 +20,7 @@ dependencies {
     implementation(GeneralDependencies.coroutinesCore)
     kapt(GeneralDependencies.hiltCompiler)
 }
+
+tasks.register("makeTest") {
+    dependsOn("test")
+}

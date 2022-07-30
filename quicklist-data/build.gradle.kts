@@ -3,10 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version Versions.ksp
     id("kotlin-kapt")
-    id("jacoco")
 }
-
-apply(from = "../jacoco.gradle.kts")
 
 android {
     namespace = "com.unatxe.quicklist.data"
@@ -70,4 +67,9 @@ dependencies {
     ksp(Room.compiler)
     implementation(Room.ktx)
     testImplementation(Room.testing)
+}
+
+tasks.register("makeTest") {
+    dependsOn("testDebugUnitTest")
+    dependsOn("connectedDebugAndroidTest")
 }
