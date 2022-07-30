@@ -8,5 +8,6 @@ import androidx.room.PrimaryKey
 data class QListData(
     @PrimaryKey(autoGenerate = true)
     public val id: Int = 0,
-    @ColumnInfo(name = "name") val name: String
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "favourite") val isFavourite: Boolean = false
 )

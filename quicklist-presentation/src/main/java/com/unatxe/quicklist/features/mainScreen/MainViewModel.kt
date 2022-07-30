@@ -1,9 +1,10 @@
 package com.unatxe.quicklist.features.mainScreen
 
 import android.util.Log
-import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.unatxe.quicklist.domain.entities.QList
 import com.unatxe.quicklist.domain.repository.QListRepository
 import com.unatxe.quicklist.helpers.even
@@ -12,29 +13,26 @@ import com.unatxe.quicklist.navigation.NavigationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import javax.inject.Provider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val qListRepository: Provider<QListRepository>,
     private val navigationManager: NavigationManager
-    ) : ViewModel(), IMainViewModel {
+) : ViewModel(), IMainViewModel {
     override fun listClicked(it: Int?) {
         Log.d("MainViewModel", "List clicked with id: $it")
         navigationManager.navigate(NavigationDirections.ListScreen.listScreen(it))
     }
 
-    private val initialQList: MutableList<QList> = mutableListOf();
+    private val initialQList: MutableList<QList> = mutableListOf()
 
     override var uiState = mutableStateListOf<QList>()
-        private set;
-
+        private set
 
     override fun searchChanged(listToSearch: String) {
-
-        viewModelScope.launch(Dispatchers.IO){
+        viewModelScope.launch(Dispatchers.IO) {
             val finalList = initialQList.filter {
                 it.name.lowercase().contains(listToSearch.lowercase())
             }
@@ -59,10 +57,10 @@ class MainViewModel @Inject constructor(
 }
 
 interface IMainViewModel {
-    fun listClicked(it: Int?);
+    fun listClicked(it: Int?)
     fun searchChanged(listToSearch: String)
 
-    val updateList : Unit;
+    val updateList: Unit
 
     val uiState: SnapshotStateList<QList>
 }

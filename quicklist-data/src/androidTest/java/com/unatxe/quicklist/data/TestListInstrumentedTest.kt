@@ -3,6 +3,7 @@ package com.unatxe.quicklist.data
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.unatxe.quicklist.domain.entities.QList
+import com.unatxe.quicklist.domain.entities.QListItem
 import com.unatxe.quicklist.domain.repository.QListRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -23,7 +24,7 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
-class ExampleInstrumentedTest {
+class TestListInstrumentedTest {
 
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
@@ -56,9 +57,10 @@ class ExampleInstrumentedTest {
     @Test
     fun insertList() {
         runBlocking {
-            val qList = QList(name = "Hello World")
+            val qList = QList(name = "Hello World", isFavourite = true)
             qListRepository.insertList(qList).collect {
                 assertEquals(it.name, "Hello World")
+                assertEquals(it.isFavourite, true)
             }
         }
     }
@@ -85,7 +87,7 @@ class ExampleInstrumentedTest {
     @Test
     fun deleteList() {
         runBlocking {
-            qListRepository.deleteList(QList(1, "Lista 1")).collect {
+            qListRepository.deleteList(QList(1, "Lista 1", false)).collect {
                 assertEquals(it, 1)
             }
 
@@ -98,9 +100,80 @@ class ExampleInstrumentedTest {
     @Test
     fun updateList() {
         runBlocking {
-            qListRepository.updateList(QList(1, "NYAM!")).collect {
+            qListRepository.updateList(QList(1, "NYAM!", isFavourite = true)).collect {
                 assertEquals(it.id, 1)
                 assertEquals(it.name, "NYAM!")
+                assertEquals(it.isFavourite, true)
+            }
+        }
+    }
+
+    @Test
+    fun getItemList() {
+        runBlocking {
+            qListRepository.getList(1).collect {
+                assertEquals(3, it.items.size)
+                assertEquals(true, it.items[1].checked)
+                assertEquals("Item 2", it.items[1].text)
+            }
+        }
+    }
+
+    @Test
+    fun insertItemList() {
+        runBlocking {
+            qListRepository.insertListItem(
+                QListItem(
+                    text = "Item 1",
+                    checked = true,
+                    qList = QList(id = 1, "Something", false)
+                )
+            )
+                .collect {
+                    assertEquals("Item 1",it.text)
+                    assertEquals(true,it.checked)
+                }
+
+            qListRepository.getList(1).collect {
+                assertEquals(4, it.items.size)
+            }
+        }
+    }
+
+    @Test
+    fun deleteItemList() {
+        runBlocking {
+            qListRepository.deleteListItem(
+                QListItem(
+                    1,
+                    "Item 1",
+                    false,
+                    QList(id = 1, "Something", false)
+                )
+            )
+                .collect {
+                    assertEquals(it, 1)
+                }
+
+            qListRepository.getList(1).collect {
+                assertEquals(2, it.items.size)
+            }
+        }
+    }
+
+    @Test
+    fun updateItemList() {
+        runBlocking {
+            qListRepository.updateListItem(
+                QListItem(
+                    1,
+                    "Item Changed",
+                    true,
+                    QList(id = 1, "Something", false)
+                )
+            ).collect {
+                assertEquals("Item Changed", it.text)
+                assertEquals(true, it.checked)
             }
         }
     }

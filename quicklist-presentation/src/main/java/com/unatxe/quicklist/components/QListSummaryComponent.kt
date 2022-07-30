@@ -12,31 +12,31 @@ import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.domain.entities.QList
 import com.unatxe.quicklist.ui.theme.One4allTheme
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QListSummaryComponent(qList: QList, onDetailListClick: (listId: Int) -> Unit = {}) {
-    Card(Modifier
-        .clickable {
-            onDetailListClick(qList.id)
-        }
-        .fillMaxWidth()) {
-        Column(Modifier
+    Card(
+        Modifier
+            .clickable {
+                onDetailListClick(qList.id)
+            }
+            .fillMaxWidth()
+    ) {
+        Column(
+            Modifier
                 .padding(all = 5.dp)
         ) {
             Column() {
                 Text(qList.name)
             }
-
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun QListSummaryComponentPreview() {
     One4allTheme {
-        QListSummaryComponent(QList(1,"Lista ejemplo"))
+        QListSummaryComponent(QList(1, "Lista ejemplo", true))
     }
 }
