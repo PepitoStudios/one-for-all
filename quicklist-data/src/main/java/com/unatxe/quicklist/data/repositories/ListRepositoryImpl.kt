@@ -11,13 +11,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import org.joda.time.DateTime
 
 class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QListRepository {
 
     override fun getList(listId: Int): Flow<QList> {
         return flow {
             val result = qListDao().get(listId)
-            val qList = QList(result.list.id, result.list.name, result.list.isFavourite)
+            val qList = QList(
+                id = result.list.id,
+                name = result.list.name,
+                isFavourite = result.list.isFavourite,
+                createdAt = DateTime(result.list.dateCreated),
+                updatedAt = DateTime(result.list.dateEdited))
             qList.addItems(
                 result.qListItems.map {
                     QListItem(it.id, it.text, it.isChecked, qList)
@@ -32,7 +38,13 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
             val result = qListDao().getAll()
             this.emit(
                 result.map {
-                    val qList = QList(it.list.id, it.list.name, it.list.isFavourite)
+                    val qList = QList(
+                        id = it.list.id,
+                        name = it.list.name,
+                        isFavourite = it.list.isFavourite,
+                        createdAt = DateTime(it.list.dateCreated),
+                        updatedAt = DateTime(it.list.dateEdited))
+
 
                     it.qListItems.let { listItems ->
                         qList.addItems(
@@ -58,7 +70,12 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
                 QListData(name = qList.name, isFavourite = qList.isFavourite)
             )
             val qListData = qListDao().get(id.toInt())
-            this.emit(QList(qListData.list.id, qListData.list.name, qListData.list.isFavourite))
+            this.emit(QList(id = qListData.list.id,
+                name = qListData.list.name,
+                isFavourite = qListData.list.isFavourite,
+                createdAt = DateTime(qListData.list.dateCreated),
+                updatedAt = DateTime(qListData.list.dateEdited)
+            ))
         }.flowOn(Dispatchers.IO)
     }
 
@@ -69,13 +86,29 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun updateList(qList: QList): Flow<QList> {
+    override fun updateList(list: QList): Flow<QList> {
         return flow {
             val id = qListDao().update(
-                QListData(id = 1, name = qList.name, isFavourite = qList.isFavourite)
+                QListData(id = 1,
+                    name = list.name,
+                    isFavourite = list.isFavourite,
+                    dateCreated = list.createdAt.millis,
+                    dateEdited = System.currentTimeMillis())
             )
             val qListData = qListDao().get(id)
-            this.emit(QList(qListData.list.id, qListData.list.name, qListData.list.isFavourite))
+            val qList = QList(
+                id = qListData.list.id,
+                name = qListData.list.name,
+                isFavourite = qListData.list.isFavourite,
+                createdAt = DateTime(qListData.list.dateCreated),
+                updatedAt = DateTime(qListData.list.dateEdited)
+            )
+            qList.addItems(
+                qListData.qListItems.map {
+                    QListItem(it.id, it.text, it.isChecked, qList)
+                }
+            )
+            emit(qList)
         }.flowOn(Dispatchers.IO)
     }
 

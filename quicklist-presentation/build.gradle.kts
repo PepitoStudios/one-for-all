@@ -92,6 +92,7 @@ dependencies {
     implementation(GeneralDependencies.androidXNavigationCompose)
     implementation(GeneralDependencies.androidXHiltNavigationCompose)
     implementation(GeneralDependencies.coroutinesAndroid)
+    implementation("androidx.compose.animation:animation-graphics:1.2.0")
 
     testImplementation(Testing.jUnit)
     androidTestImplementation(Testing.extJUnit)
@@ -122,6 +123,8 @@ dependencies {
     implementation(project(":quicklist-data"))
 
     implementation(Room.runtime)
+
+    implementation("joda-time:joda-time:2.10.14")
 }
 
 kapt {

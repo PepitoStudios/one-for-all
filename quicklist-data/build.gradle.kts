@@ -67,6 +67,8 @@ dependencies {
     ksp(Room.compiler)
     implementation(Room.ktx)
     testImplementation(Room.testing)
+
+    implementation("joda-time:joda-time:2.10.14")
 }
 
 tasks.register("makeTest") {

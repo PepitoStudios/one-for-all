@@ -1,5 +1,6 @@
-package com.unatxe.quicklist.data
+package com.unatxe.quicklist.data.utils
 
+import com.unatxe.quicklist.data.QuickListDatabase
 import com.unatxe.quicklist.data.entities.QListData
 import com.unatxe.quicklist.data.entities.QListItemData
 

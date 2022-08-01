@@ -5,20 +5,19 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.unatxe.quicklist.domain.entities.QList
-import com.unatxe.quicklist.domain.repository.QListRepository
+import com.unatxe.quicklist.domain.interactors.GetListUseCase
+import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.helpers.even
 import com.unatxe.quicklist.navigation.NavigationDirections
 import com.unatxe.quicklist.navigation.NavigationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import javax.inject.Provider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val qListRepository: Provider<QListRepository>,
+    private val getListUseCase: GetListUseCase,
     private val navigationManager: NavigationManager
 ) : ViewModel(), IMainViewModel {
     override fun listClicked(it: Int?) {
@@ -26,9 +25,9 @@ class MainViewModel @Inject constructor(
         navigationManager.navigate(NavigationDirections.ListScreen.listScreen(it))
     }
 
-    private val initialQList: MutableList<QList> = mutableListOf()
+    private val initialQList: MutableList<QListCompose> = mutableListOf()
 
-    override var uiState = mutableStateListOf<QList>()
+    override var uiState = mutableStateListOf<QListCompose>()
         private set
 
     override fun searchChanged(listToSearch: String) {
@@ -44,12 +43,18 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    override fun favouriteClicked(it: QListCompose) {
+        val favouritePosition = uiState.indexOf(it)
+        uiState[favouritePosition].isFavourite.value = it.isFavourite.value.not()
+    }
+
     override val updateList: Unit by lazy {
         viewModelScope.launch {
-            qListRepository.get().getLists().collect {
+            getListUseCase().collect {
                 initialQList.clear()
-                initialQList.addAll(it)
-                uiState.addAll(it)
+                val finalList = QListCompose.from(it)
+                initialQList.addAll(finalList)
+                uiState.addAll(finalList)
             }
         }
         Unit
@@ -59,8 +64,9 @@ class MainViewModel @Inject constructor(
 interface IMainViewModel {
     fun listClicked(it: Int?)
     fun searchChanged(listToSearch: String)
+    fun favouriteClicked(it: QListCompose)
 
     val updateList: Unit
 
-    val uiState: SnapshotStateList<QList>
+    val uiState: SnapshotStateList<QListCompose>
 }

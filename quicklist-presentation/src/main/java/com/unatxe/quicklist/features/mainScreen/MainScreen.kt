@@ -2,9 +2,11 @@ package com.unatxe.quicklist.features.mainScreen
 
 import ExcludeFromJacocoGeneratedReport
 import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,7 +32,7 @@ import com.unatxe.quicklist.components.search.SearchComponent
 import com.unatxe.quicklist.helpers.ViewModelPreviewHelper.previewMainViewModel
 import com.unatxe.quicklist.ui.theme.One4allTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
     viewModel: IMainViewModel
@@ -62,15 +64,24 @@ fun MainScreen(
                 LazyColumn(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = PaddingValues(all = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
+                    modifier = Modifier.fillMaxHeight()
                 ) {
                     items(
                         items = authUiState,
                         key = { it.id }
                     ) {
-                        QListSummaryComponent(it) {
-                            viewModel.listClicked(it)
-                        }
+                        QListSummaryComponent(
+                            Modifier.animateItemPlacement(),
+                            it,
+                            onDetailListClick = {
+                                viewModel.listClicked(it.id)
+                            },
+                            onFavoriteClick = {
+                                viewModel.favouriteClicked(it)
+                            }
+
+                        )
                     }
                 }
             }

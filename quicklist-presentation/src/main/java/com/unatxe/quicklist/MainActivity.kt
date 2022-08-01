@@ -13,6 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.unatxe.quicklist.data.QuickListDatabase
 import com.unatxe.quicklist.features.listScreen.ListScreen
 import com.unatxe.quicklist.features.mainScreen.MainScreen
 import com.unatxe.quicklist.features.mainScreen.MainViewModel
@@ -21,6 +22,10 @@ import com.unatxe.quicklist.navigation.NavigationManager
 import com.unatxe.quicklist.ui.theme.One4allTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import javax.inject.Provider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -30,7 +35,6 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
@@ -45,38 +49,55 @@ class MainActivity : ComponentActivity() {
             One4allTheme {
                 // A surface container using the 'background' color from the theme
                 Surface() {
-                    AnimatedNavHost(navController = navController, startDestination = NavigationDirections.mainScreen.destination) {
-
-                        composable(NavigationDirections.mainScreen.destination,
+                    AnimatedNavHost(
+                        navController = navController,
+                        startDestination = NavigationDirections.mainScreen.destination
+                    ) {
+                        composable(
+                            NavigationDirections.mainScreen.destination,
                             enterTransition = {
                                 when (initialState.destination.route) {
                                     NavigationDirections.ListScreen.route ->
-                                        slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                                        slideIntoContainer(
+                                            AnimatedContentScope.SlideDirection.Left,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
                             },
                             exitTransition = {
                                 when (targetState.destination.route) {
                                     NavigationDirections.ListScreen.route ->
-                                        slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                                        slideOutOfContainer(
+                                            AnimatedContentScope.SlideDirection.Left,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
                             },
                             popEnterTransition = {
                                 when (initialState.destination.route) {
                                     NavigationDirections.ListScreen.route ->
-                                        slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                                        slideIntoContainer(
+                                            AnimatedContentScope.SlideDirection.Right,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
                             },
                             popExitTransition = {
                                 when (targetState.destination.route) {
                                     NavigationDirections.ListScreen.route ->
-                                        slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                                        slideOutOfContainer(
+                                            AnimatedContentScope.SlideDirection.Right,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
-                            }) {
-                            MainScreen(hiltViewModel<MainViewModel>())  }
+                            }
+                        ) {
+                            MainScreen(hiltViewModel<MainViewModel>())
+                        }
 
                         composable(
                             NavigationDirections.ListScreen.route,
@@ -84,34 +105,50 @@ class MainActivity : ComponentActivity() {
                             enterTransition = {
                                 when (initialState.destination.route) {
                                     NavigationDirections.mainScreen.destination ->
-                                        slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                                        slideIntoContainer(
+                                            AnimatedContentScope.SlideDirection.Left,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
                             },
                             exitTransition = {
                                 when (targetState.destination.route) {
                                     NavigationDirections.mainScreen.destination ->
-                                        slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(700))
+                                        slideOutOfContainer(
+                                            AnimatedContentScope.SlideDirection.Left,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
                             },
                             popEnterTransition = {
                                 when (initialState.destination.route) {
                                     NavigationDirections.mainScreen.destination ->
-                                        slideIntoContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                                        slideIntoContainer(
+                                            AnimatedContentScope.SlideDirection.Right,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
                             },
                             popExitTransition = {
                                 when (targetState.destination.route) {
                                     NavigationDirections.mainScreen.destination ->
-                                        slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(700))
+                                        slideOutOfContainer(
+                                            AnimatedContentScope.SlideDirection.Right,
+                                            animationSpec = tween(700)
+                                        )
                                     else -> null
                                 }
                             }
                         ) { backStackEntry ->
                             assert(backStackEntry.arguments != null)
-                            ListScreen(backStackEntry.arguments!!.getInt(NavigationDirections.ListScreen.KEY_LIST_ID))
+                            ListScreen(
+                                backStackEntry.arguments!!.getInt(
+                                    NavigationDirections.ListScreen.KEY_LIST_ID
+                                )
+                            )
                         }
                     }
                 }

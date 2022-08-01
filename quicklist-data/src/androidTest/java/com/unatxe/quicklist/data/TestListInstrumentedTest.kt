@@ -2,6 +2,7 @@ package com.unatxe.quicklist.data
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.unatxe.quicklist.data.utils.DatabasePopulation
 import com.unatxe.quicklist.domain.entities.QList
 import com.unatxe.quicklist.domain.entities.QListItem
 import com.unatxe.quicklist.domain.repository.QListRepository

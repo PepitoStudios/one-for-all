@@ -9,5 +9,7 @@ data class QListData(
     @PrimaryKey(autoGenerate = true)
     public val id: Int = 0,
     @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "favourite") val isFavourite: Boolean = false
+    @ColumnInfo(name = "favourite") val isFavourite: Boolean = false,
+    @ColumnInfo(name = "dateCreated") val dateCreated: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "dateEdited") val dateEdited: Long = System.currentTimeMillis()
 )

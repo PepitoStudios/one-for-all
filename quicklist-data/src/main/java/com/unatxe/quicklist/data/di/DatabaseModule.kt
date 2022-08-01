@@ -21,7 +21,7 @@ object DatabaseModule {
     @Volatile
     private var INSTANCE: QuickListDatabase? = null
 
-    fun getInstance(@ApplicationContext applicationContext: Context): QuickListDatabase =
+    private fun getInstance(@ApplicationContext applicationContext: Context): QuickListDatabase =
         synchronized(this) {
             INSTANCE ?: buildDatabase(applicationContext).also { INSTANCE = it }
         }
@@ -39,10 +39,13 @@ object DatabaseModule {
             applicationContext,
             QuickListDatabase::class.java,
             "list_table"
-        ).createFromAsset("list_table.db").build()/*.createFromAsset("list_table.db")
-            .build().also {
-                it.query("select 1", null)
-            }*/
+        )
+            .createFromAsset("list_table.db")
+            .build()
+        // .build().also {
+        // DatabasePopulation.populateDbTest(it)
+        // it.query("select 1", null)
+        // }
     }
 
     @Provides
