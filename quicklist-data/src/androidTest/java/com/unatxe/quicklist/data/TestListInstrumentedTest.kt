@@ -10,7 +10,11 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.io.IOException
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
+import org.joda.time.DateTime
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -58,7 +62,12 @@ class TestListInstrumentedTest {
     @Test
     fun insertList() {
         runBlocking {
-            val qList = QList(name = "Hello World", isFavourite = true)
+            val qList = QList(
+                name = "Hello World",
+                isFavourite = true,
+                createdAt = DateTime(),
+                updatedAt = DateTime()
+            )
             qListRepository.insertList(qList).collect {
                 assertEquals(it.name, "Hello World")
                 assertEquals(it.isFavourite, true)
@@ -78,30 +87,53 @@ class TestListInstrumentedTest {
 
     @Test
     fun getAllList() {
-        runBlocking {
-            qListRepository.getLists().collect {
-                assertEquals(it.size, 5)
+        try {
+            runBlocking(Dispatchers.IO) {
+                qListRepository.getLists().collect {
+                    assertEquals(it.size, 5)
+                    this@runBlocking.cancel()
+                }
             }
-        }
+        } catch (_: CancellationException) {}
     }
 
     @Test
     fun deleteList() {
-        runBlocking {
-            qListRepository.deleteList(QList(1, "Lista 1", false)).collect {
-                assertEquals(it, 1)
+        try {
+            runBlocking {
+                qListRepository.deleteList(
+                    QList(1, "Lista 1", false, createdAt = DateTime(), updatedAt = DateTime())
+                ).collect {
+                    assertEquals(it, 1)
+                }
+
+                qListRepository.getLists().collect {
+                    assertEquals(it.size, 4)
+                    this@runBlocking.cancel()
+                }
             }
 
-            qListRepository.getLists().collect {
-                assertEquals(it.size, 4)
+            runBlocking(Dispatchers.IO) {
+                qListRepository.getLists().collect {
+                    assertEquals(it.size, 5)
+                    this@runBlocking.cancel()
+                }
             }
-        }
+        } catch (_: CancellationException) {}
     }
 
     @Test
     fun updateList() {
         runBlocking {
-            qListRepository.updateList(QList(1, "NYAM!", isFavourite = true)).collect {
+            qListRepository.updateList(
+                QList(
+                    1,
+                    "NYAM!",
+                    isFavourite = true,
+                    createdAt = DateTime(),
+                    updatedAt = DateTime()
+                )
+            ).collect {
                 assertEquals(it.id, 1)
                 assertEquals(it.name, "NYAM!")
                 assertEquals(it.isFavourite, true)
@@ -127,12 +159,18 @@ class TestListInstrumentedTest {
                 QListItem(
                     text = "Item 1",
                     checked = true,
-                    qList = QList(id = 1, "Something", false)
+                    qList = QList(
+                        id = 1,
+                        "Something",
+                        false,
+                        createdAt = DateTime(),
+                        updatedAt = DateTime()
+                    )
                 )
             )
                 .collect {
-                    assertEquals("Item 1",it.text)
-                    assertEquals(true,it.checked)
+                    assertEquals("Item 1", it.text)
+                    assertEquals(true, it.checked)
                 }
 
             qListRepository.getList(1).collect {
@@ -149,7 +187,13 @@ class TestListInstrumentedTest {
                     1,
                     "Item 1",
                     false,
-                    QList(id = 1, "Something", false)
+                    QList(
+                        id = 1,
+                        "Something",
+                        false,
+                        createdAt = DateTime(),
+                        updatedAt = DateTime()
+                    )
                 )
             )
                 .collect {
@@ -170,7 +214,13 @@ class TestListInstrumentedTest {
                     1,
                     "Item Changed",
                     true,
-                    QList(id = 1, "Something", false)
+                    QList(
+                        id = 1,
+                        "Something",
+                        false,
+                        createdAt = DateTime(),
+                        updatedAt = DateTime()
+                    )
                 )
             ).collect {
                 assertEquals("Item Changed", it.text)

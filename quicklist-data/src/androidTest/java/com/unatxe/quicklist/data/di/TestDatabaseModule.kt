@@ -34,8 +34,6 @@ object TestDatabaseModule {
 
     @Provides
     fun provideQListDao(quickListDatabase: Provider<QuickListDatabase>): QListDao {
-        assert(Looper.getMainLooper() != Looper.myLooper())
-
         return quickListDatabase.get().qListDao()
     }
 
