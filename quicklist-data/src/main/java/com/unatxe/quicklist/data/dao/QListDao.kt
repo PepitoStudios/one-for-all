@@ -9,6 +9,7 @@ import androidx.room.Update
 import com.unatxe.quicklist.data.entities.QListData
 import com.unatxe.quicklist.data.entities.QListItemData
 import com.unatxe.quicklist.data.entities.QListWithItemsData
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface QListDao {
@@ -19,7 +20,7 @@ interface QListDao {
 
     @Transaction
     @Query("SELECT * FROM list_table")
-    fun getAll(): List<QListWithItemsData>
+    fun getAll(): Flow<List<QListWithItemsData>>
 
     @Insert
     fun insert(qListData: QListData): Long

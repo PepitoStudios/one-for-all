@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -31,6 +32,7 @@ import com.unatxe.quicklist.components.QListSummaryComponent
 import com.unatxe.quicklist.components.search.SearchComponent
 import com.unatxe.quicklist.helpers.ViewModelPreviewHelper.previewMainViewModel
 import com.unatxe.quicklist.ui.theme.One4allTheme
+import com.unatxe.quicklist.ui.theme.h3Medium
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -44,8 +46,13 @@ fun MainScreen(
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
-                title = { Text(stringResource(id = R.string.app_name)) },
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.app_name),
+                        style = h3Medium
+                    )
+                },
                 colors = TopAppBarDefaults.smallTopAppBarColors()
 
             )
@@ -53,9 +60,14 @@ fun MainScreen(
         content = { padding ->
             Column() {
                 SearchComponent(
-                    Modifier.padding(padding),
+                    Modifier.padding(
+                        start = 48.dp,
+                        end = 48.dp,
+                        top = padding.calculateTopPadding(),
+                        bottom = 24.dp
+                    ),
                     text = "",
-                    label = "Default Label",
+                    label = stringResource(id = R.string.search_list),
                     onValueChange = {
                         // searchText = it
                         viewModel.searchChanged(it)
@@ -65,7 +77,7 @@ fun MainScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = PaddingValues(all = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
-                    modifier = Modifier.fillMaxHeight()
+                    modifier = Modifier.fillMaxHeight().padding(start = 24.dp, end = 24.dp)
                 ) {
                     items(
                         items = authUiState,

@@ -1,58 +1,64 @@
 package com.unatxe.quicklist.helpers
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.unatxe.quicklist.domain.entities.QList
+import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.features.mainScreen.IMainViewModel
 import org.joda.time.DateTime
 
 object ViewModelPreviewHelper {
 
     val previewMainViewModel: () -> IMainViewModel = {
-        val mutableLiveQList = mutableStateListOf<QList>().also {
+        val mutableLiveQList = mutableStateListOf<QListCompose>().also {
             it.add(
-                QList(
+                QListCompose(
                     id = 1,
                     name = "Lista 1",
-                    isFavourite = true,
+                    isFavourite = mutableStateOf(true),
+                    items = mutableStateListOf(),
                     createdAt = DateTime(),
-                    updatedAt = DateTime()
+                    updatedAt = mutableStateOf(DateTime())
                 )
             )
             it.add(
-                QList(
+                QListCompose(
                     id = 2,
                     name = "Lista 2",
-                    isFavourite = true,
+                    isFavourite = mutableStateOf(true),
+                    items = mutableStateListOf(),
                     createdAt = DateTime(),
-                    updatedAt = DateTime()
+                    updatedAt = mutableStateOf(DateTime())
                 )
             )
             it.add(
-                QList(
+                QListCompose(
                     id = 3,
                     name = "Lista 3",
-                    isFavourite = true,
+                    isFavourite = mutableStateOf(true),
+                    items = mutableStateListOf(),
                     createdAt = DateTime(),
-                    updatedAt = DateTime()
+                    updatedAt = mutableStateOf(DateTime())
                 )
             )
             it.add(
-                QList(
+                QListCompose(
                     id = 4,
                     name = "Lista 4",
-                    isFavourite = true,
+                    isFavourite = mutableStateOf(true),
+                    items = mutableStateListOf(),
                     createdAt = DateTime(),
-                    updatedAt = DateTime()
+                    updatedAt = mutableStateOf(DateTime())
                 )
             )
             it.add(
-                QList(
+                QListCompose(
                     id = 5,
                     name = "Lista 5",
-                    isFavourite = true,
+                    isFavourite = mutableStateOf(true),
+                    items = mutableStateListOf(),
                     createdAt = DateTime(),
-                    updatedAt = DateTime()
+                    updatedAt = mutableStateOf(DateTime())
                 )
             )
         }
@@ -61,13 +67,12 @@ object ViewModelPreviewHelper {
             object : IMainViewModel {
                 override fun listClicked(it: Int?) {}
                 override fun searchChanged(listToSearch: String) {}
-                override fun favouriteClicked(it: QList) {
-                }
+                override fun favouriteClicked(it: QListCompose) {}
 
                 override val updateList: Unit
                     get() = Unit
 
-                override val uiState: SnapshotStateList<QList>
+                override val uiState: SnapshotStateList<QListCompose>
                     get() = mutableLiveQList
             }
         }

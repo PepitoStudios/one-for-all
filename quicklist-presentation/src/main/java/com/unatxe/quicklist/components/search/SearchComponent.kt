@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
 import com.unatxe.quicklist.ui.theme.One4allTheme
+import com.unatxe.quicklist.ui.theme.bodyLarge
 
 @Composable
 @ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ fun SearchComponent(
             searchText = it
             onValueChange(it)
         },
+        textStyle = bodyLarge,
         label = { Text(text = label) },
         modifier = modifier.fillMaxWidth(),
         leadingIcon = {

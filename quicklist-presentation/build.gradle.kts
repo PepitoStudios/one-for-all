@@ -93,6 +93,7 @@ dependencies {
     implementation(GeneralDependencies.androidXHiltNavigationCompose)
     implementation(GeneralDependencies.coroutinesAndroid)
     implementation("androidx.compose.animation:animation-graphics:1.2.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.2.0")
 
     testImplementation(Testing.jUnit)
     androidTestImplementation(Testing.extJUnit)

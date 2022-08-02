@@ -6,7 +6,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unatxe.quicklist.domain.interactors.GetListUseCase
+import com.unatxe.quicklist.domain.interactors.UpdateListUseCase
 import com.unatxe.quicklist.entities.QListCompose
+import com.unatxe.quicklist.entities.QListCompose.Companion.update
 import com.unatxe.quicklist.helpers.even
 import com.unatxe.quicklist.navigation.NavigationDirections
 import com.unatxe.quicklist.navigation.NavigationManager
@@ -18,6 +20,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getListUseCase: GetListUseCase,
+    private val updateListUseCase: UpdateListUseCase,
     private val navigationManager: NavigationManager
 ) : ViewModel(), IMainViewModel {
     override fun listClicked(it: Int?) {
@@ -30,7 +33,10 @@ class MainViewModel @Inject constructor(
     override var uiState = mutableStateListOf<QListCompose>()
         private set
 
+    var listToSearch = ""
+
     override fun searchChanged(listToSearch: String) {
+        this.listToSearch = listToSearch
         viewModelScope.launch(Dispatchers.IO) {
             val finalList = initialQList.filter {
                 it.name.lowercase().contains(listToSearch.lowercase())
@@ -43,18 +49,23 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    override fun favouriteClicked(it: QListCompose) {
-        val favouritePosition = uiState.indexOf(it)
-        uiState[favouritePosition].isFavourite.value = it.isFavourite.value.not()
+    override fun favouriteClicked(listToUpdate: QListCompose) {
+        viewModelScope.launch(Dispatchers.IO) {
+            listToUpdate.isFavourite.value = listToUpdate.isFavourite.value.not()
+            updateListUseCase.invoke(QListCompose.to(listToUpdate)).collect {
+                // val favouritePosition = uiState.indexOf(listToUpdate)
+                // uiState[favouritePosition].update(QListCompose.from(it))
+            }
+        }
     }
 
     override val updateList: Unit by lazy {
-        viewModelScope.launch {
+        viewModelScope.launch((Dispatchers.IO)) {
             getListUseCase().collect {
-                initialQList.clear()
-                val finalList = QListCompose.from(it)
-                initialQList.addAll(finalList)
-                uiState.addAll(finalList)
+                val updateListCompose = QListCompose.from(it)
+                initialQList.even(updateListCompose)
+                initialQList.update(updateListCompose)
+                searchChanged(listToSearch)
             }
         }
         Unit

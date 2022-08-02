@@ -36,7 +36,10 @@ import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
 import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.helpers.DateUtils
+import com.unatxe.quicklist.helpers.noRippleClickable
 import com.unatxe.quicklist.ui.theme.One4allTheme
+import com.unatxe.quicklist.ui.theme.bodyRegular
+import com.unatxe.quicklist.ui.theme.h5Bold
 import org.joda.time.DateTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationGraphicsApi::class)
@@ -70,27 +73,32 @@ fun QListSummaryComponent(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column() {
-                        Text(qList.name)
-                        Text(DateUtils.formatCardListDate(qList.updatedAt, LocalContext.current))
+                        Text(qList.name, style = h5Bold)
+                        Text(
+                            DateUtils.formatCardListDate(
+                                qList.updatedAt.value,
+                                LocalContext.current
+                            ),
+                            style = bodyRegular
+                        )
                     }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable {
-                            onFavoriteClick()
-                        }
+                        modifier = Modifier
                     ) {
                         val image = AnimatedImageVector.animatedVectorResource(
                             R.drawable.heart_unchecked_to_checked
                         )
-
                         Icon(
                             painter = rememberAnimatedVectorPainter(image, qList.isFavourite.value),
                             contentDescription = null,
-                            Modifier.size(width = 24.dp, height = 24.dp),
+                            Modifier.size(width = 40.dp, height = 40.dp).padding(8.dp)
+                                .noRippleClickable {
+                                    onFavoriteClick()
+                                },
                             tint = MaterialTheme.colorScheme.primary
                         )
-                        val totalAndChecked = qList.getTotalAndChecked()
-                        Text("${totalAndChecked.second} / ${totalAndChecked.first}")
+                        Text(qList.getTotalAndChecked(), style = bodyRegular)
                     }
                 }
             }
@@ -109,7 +117,9 @@ fun QListSummaryComponentPreview() {
                 name = "Lista ejemplo",
                 isFavourite = remember { mutableStateOf(true) },
                 createdAt = DateTime(),
-                updatedAt = DateTime(),
+                updatedAt = remember {
+                    mutableStateOf(DateTime())
+                },
                 items = remember { mutableStateListOf() }
             )
         )
