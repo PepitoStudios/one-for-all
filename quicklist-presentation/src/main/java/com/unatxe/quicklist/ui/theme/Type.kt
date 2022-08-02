@@ -27,29 +27,26 @@ val fontFamilyCabin = FontFamily(
 val h3Medium = TextStyle(
     fontFamily = fontFamilyCabin,
     fontWeight = FontWeight.Medium,
-    fontSize = 24.sp,
-    lineHeight = 29.sp
+    fontSize = 24.sp
 )
 
 val h5Bold = TextStyle(
     fontFamily = fontFamilyCabin,
     fontWeight = FontWeight.Bold,
-    fontSize = 18.sp,
-    lineHeight = 21.87.sp
+    letterSpacing = 0.75.sp,
+    fontSize = 18.sp
 )
 
 val bodyRegular = TextStyle(
     fontFamily = fontFamilyCabin,
     fontWeight = FontWeight.Normal,
-    fontSize = 12.sp,
-    lineHeight = 14.58.sp
+    fontSize = 12.sp
 )
 
 val bodyLarge = TextStyle(
     fontFamily = fontFamilyCabin,
     fontWeight = FontWeight.Normal,
-    fontSize = 16.sp,
-    letterSpacing = 0.5.sp
+    fontSize = 16.sp
 )
 // Set of Material typography styles to start with
 /*val Typography = Typography(

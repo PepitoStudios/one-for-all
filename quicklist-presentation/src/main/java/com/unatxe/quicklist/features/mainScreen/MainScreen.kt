@@ -61,8 +61,8 @@ fun MainScreen(
             Column() {
                 SearchComponent(
                     Modifier.padding(
-                        start = 48.dp,
-                        end = 48.dp,
+                        start = 40.dp,
+                        end = 40.dp,
                         top = padding.calculateTopPadding(),
                         bottom = 24.dp
                     ),
@@ -75,9 +75,9 @@ fun MainScreen(
                 )
                 LazyColumn(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    contentPadding = PaddingValues(all = 8.dp),
+                    contentPadding = PaddingValues(all = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top),
-                    modifier = Modifier.fillMaxHeight().padding(start = 24.dp, end = 24.dp)
+                    modifier = Modifier.fillMaxHeight()
                 ) {
                     items(
                         items = authUiState,
