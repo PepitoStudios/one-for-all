@@ -10,11 +10,9 @@ class NavigationManager {
         directions: NavigationCommand
     ) {
         commands.value = directions
-
     }
 
     fun clear() {
         commands.value = Default
     }
-
 }

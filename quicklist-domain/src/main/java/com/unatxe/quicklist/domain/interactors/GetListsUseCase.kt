@@ -5,10 +5,10 @@ import com.unatxe.quicklist.domain.repository.QListRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
-class GetListUseCase @Inject constructor(
+class GetListsUseCase @Inject constructor(
     private val qListRepository: QListRepository
 ) {
-    operator fun invoke(idList: Int): Flow<QList> {
-        return qListRepository.getList(idList)
+    operator fun invoke(): Flow<List<QList>> {
+        return qListRepository.getLists()
     }
 }

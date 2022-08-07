@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.unatxe.quicklist.domain.interactors.GetListUseCase
+import com.unatxe.quicklist.domain.interactors.GetListsUseCase
 import com.unatxe.quicklist.domain.interactors.UpdateListUseCase
 import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.entities.QListCompose.Companion.update
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val getListUseCase: GetListUseCase,
+    private val getListsUseCase: GetListsUseCase,
     private val updateListUseCase: UpdateListUseCase,
     private val navigationManager: NavigationManager
 ) : ViewModel(), IMainViewModel {
@@ -61,7 +61,7 @@ class MainViewModel @Inject constructor(
 
     override val updateList: Unit by lazy {
         viewModelScope.launch((Dispatchers.IO)) {
-            getListUseCase().collect {
+            getListsUseCase().collect {
                 val updateListCompose = QListCompose.from(it)
                 initialQList.even(updateListCompose)
                 initialQList.update(updateListCompose)
