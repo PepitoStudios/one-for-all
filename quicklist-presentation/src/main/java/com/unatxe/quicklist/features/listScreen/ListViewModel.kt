@@ -3,6 +3,7 @@ package com.unatxe.quicklist.features.listScreen
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -30,6 +31,8 @@ class ListViewModel @Inject constructor(
     override var uiState = mutableStateListOf<QListItemType>()
         private set
 
+    override var numCheckedItems: MutableState<Int> = mutableStateOf(0)
+
     private val initialUIState: MutableList<QListItemType> = mutableListOf()
 
     override val isCreationMode: Boolean
@@ -47,6 +50,7 @@ class ListViewModel @Inject constructor(
                     val mapped = QListCompose.from(it)
                     initialUIState.evenArray(mapped.items)
                     uiState.evenArray(mapped.items)
+                    calDone()
                 }
             }
         }
@@ -66,13 +70,15 @@ class ListViewModel @Inject constructor(
         }
     }
 
+    private fun calDone() {
+        numCheckedItems.value = uiState
+            .count { it is QListItemType.QListItemCheckBox && it.checked.value }
+    }
+
     override fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox) {
         qLisItem.checked.value = qLisItem.checked.value.not()
         uiState.sortPositions()
-    }
-
-    override fun numCheckedItems(): Int {
-        return initialUIState.count { it is QListItemType.QListItemCheckBox && it.checked.value }
+        calDone();
     }
 }
 
@@ -80,8 +86,8 @@ interface IListViewModel {
     val uiState: SnapshotStateList<QListItemType>
     val isCreationMode: Boolean
     var showUncheckedItems: MutableState<Boolean>
+    var numCheckedItems: MutableState<Int>
 
     fun doneClicked()
     fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox)
-    fun numCheckedItems(): Int
 }

@@ -73,7 +73,7 @@ fun ListScreen(viewModel: IListViewModel) {
                 } else {
                     ItemListComponent(
                         uiState = uiState,
-                        numCheckedItems = viewModel.numCheckedItems(),
+                        numCheckedItems = viewModel.numCheckedItems.value,
                         showUncheckedItems = viewModel.showUncheckedItems.value,
                         onCheckBoxChange = {
                             viewModel.onCheckBoxChange(it)
@@ -189,6 +189,9 @@ fun ListScreenPreview() {
             override var showUncheckedItems: MutableState<Boolean>
                 get() = mutableStateOf(true)
                 set(value) {}
+            override var numCheckedItems: MutableState<Int>
+                get() = mutableStateOf(0)
+                set(value) {}
 
             override fun doneClicked() {
                 TODO("Not yet implemented")
@@ -198,9 +201,6 @@ fun ListScreenPreview() {
                 TODO("Not yet implemented")
             }
 
-            override fun numCheckedItems(): Int {
-                TODO("Not yet implemented")
-            }
         })
     }
 }
