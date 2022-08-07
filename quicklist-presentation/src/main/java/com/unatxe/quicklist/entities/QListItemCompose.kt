@@ -15,7 +15,7 @@ sealed class QListItemType(val guid: String = UUID.randomUUID().toString()) {
 
 const val ITEM_BEFORE = -1
 const val ITEM_AFTER = 1
-val ITEM_EQUALS = 0
+const val ITEM_EQUALS = 0
 
 fun List<QListItemType>.numberOfCheckedItems(): Int {
     return this.count { it is QListItemType.QListItemCheckBox && it.checked.value }

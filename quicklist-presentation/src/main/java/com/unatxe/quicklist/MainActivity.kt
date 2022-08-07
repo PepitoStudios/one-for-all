@@ -51,8 +51,8 @@ class MainActivity : ComponentActivity() {
             One4allTheme {
                 // A surface container using the 'background' color from the theme
                 Surface() {
-                     NormalFlow(navController)
-                    //TestFlow(navController = navController)
+                     //NormalFlow(navController)
+                    TestFlow(navController = navController)
                 }
             }
         }
