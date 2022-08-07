@@ -3,7 +3,6 @@ package com.unatxe.quicklist.entities
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import com.unatxe.quicklist.domain.entities.QList
 import com.unatxe.quicklist.domain.entities.QListItem
 import org.joda.time.DateTime
@@ -12,14 +11,16 @@ data class QListCompose(
     val id: Int = 0,
     val name: String,
     val isFavourite: MutableState<Boolean>,
-    val items: SnapshotStateList<QListItem>,
+    val items: SnapshotStateList<QListItemType>,
     val createdAt: DateTime,
     val updatedAt: MutableState<DateTime>
 ) {
 
     fun getTotalAndChecked(): String {
         val total = items.size
-        val checked = items.filter { it.checked }.size
+        val checked = items.filter {
+            it is QListItemType.QListItemCheckBox&& it.checked.value
+        }.size
         return if (total == 0 && checked == 0) {
             "- / -"
         } else {
@@ -40,12 +41,35 @@ data class QListCompose(
     }
 
     companion object {
+
+        private fun generateItemsTypes(items: List<QListItem>): SnapshotStateList<QListItemType> {
+            val itemsTypes = SnapshotStateList<QListItemType>()
+            val sorted = items.sortedBy {
+                it.id
+            }.map {
+                QListItemType.QListItemCheckBox(it.id, it.text, mutableStateOf(it.checked))
+            }
+            val uncheckedItems = sorted.filter {
+                it.checked.value.not()
+            }
+
+            val checkedItems = sorted.filter {
+                it.checked.value
+            }
+
+            itemsTypes.addAll(uncheckedItems)
+            itemsTypes.add(QListItemType.QListItemDoneTitle)
+            itemsTypes.addAll(checkedItems)
+
+            return itemsTypes
+        }
+
         fun from(qList: QList): QListCompose {
             return QListCompose(
                 id = qList.id,
                 name = qList.name,
                 isFavourite = mutableStateOf(qList.isFavourite),
-                items = qList.items.toMutableStateList(),
+                items = generateItemsTypes(qList.items),
                 createdAt = qList.createdAt,
                 updatedAt = mutableStateOf(qList.updatedAt)
             )

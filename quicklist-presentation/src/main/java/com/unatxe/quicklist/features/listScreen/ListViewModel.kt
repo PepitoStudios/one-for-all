@@ -1,16 +1,20 @@
 package com.unatxe.quicklist.features.listScreen
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unatxe.quicklist.domain.interactors.GetListUseCase
 import com.unatxe.quicklist.entities.QListCompose
+import com.unatxe.quicklist.entities.QListItemType
+import com.unatxe.quicklist.entities.sortPositions
+import com.unatxe.quicklist.helpers.evenArray
 import com.unatxe.quicklist.navigation.NavigationDirections
 import com.unatxe.quicklist.navigation.NavigationDirections.ListScreen.NO_VALUE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -20,8 +24,32 @@ class ListViewModel @Inject constructor(
 ) : ViewModel(), IListViewModel {
 
     private val idList: Int
+    var doneClicked = false
+    override fun doneClicked() {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (doneClicked) {
+                uiState.evenArray(initialUIState)
+            } else {
+                val modifiedArray = initialUIState.filter {
+                    (it is QListItemType.QListItemCheckBox && it.checked.value).not()
+                }
 
-    override val uiState: MutableState<QListCompose?>
+                uiState.evenArray(modifiedArray)
+            }
+            doneClicked = doneClicked.not()
+        }
+    }
+
+    override fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox) {
+        qLisItem.checked.value = qLisItem.checked.value.not()
+        uiState.sortPositions()
+    }
+
+    override var uiState = mutableStateListOf<QListItemType>()
+        private set
+
+    private val initialUIState: MutableList<QListItemType> = mutableListOf()
+
     override val isCreationMode: Boolean
         get() = idList == NO_VALUE
 
@@ -29,12 +57,12 @@ class ListViewModel @Inject constructor(
         idList = savedStateHandle.get<Int>(NavigationDirections.ListScreen.KEY_LIST_ID)
             ?: NO_VALUE
 
-        uiState = mutableStateOf(null)
-
         if (idList != NO_VALUE) {
             viewModelScope.launch {
                 getListUseCase.invoke(idList).collect {
-                    uiState.value = QListCompose.from(it)
+                    val mapped = QListCompose.from(it)
+                    initialUIState.evenArray(mapped.items)
+                    uiState.evenArray(mapped.items)
                 }
             }
         }
@@ -42,8 +70,10 @@ class ListViewModel @Inject constructor(
 }
 
 interface IListViewModel {
+    fun doneClicked()
+    fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox)
 
-    val uiState: MutableState<QListCompose?>
+    val uiState: SnapshotStateList<QListItemType>
 
     val isCreationMode: Boolean
 }

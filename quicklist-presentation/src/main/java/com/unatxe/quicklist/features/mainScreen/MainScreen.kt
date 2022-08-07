@@ -59,7 +59,7 @@ fun MainScreen(
         content = { padding ->
             Column() {
                 SearchComponent(
-                    Modifier.padding(
+                    modifier = Modifier.padding(
                         start = 40.dp,
                         end = 40.dp,
                         top = padding.calculateTopPadding(),

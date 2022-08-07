@@ -2,5 +2,6 @@
     <string name="app_name">Quick List</string>
     <string name="todayAt">Today at %1$s</string>
     <string name="search_list">Search List</string>
+    <string name="done">Done</string>
 
 </resources>

@@ -9,7 +9,7 @@ import com.unatxe.quicklist.domain.interactors.GetListsUseCase
 import com.unatxe.quicklist.domain.interactors.UpdateListUseCase
 import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.entities.QListCompose.Companion.update
-import com.unatxe.quicklist.helpers.even
+import com.unatxe.quicklist.helpers.evenArray
 import com.unatxe.quicklist.navigation.NavigationDirections
 import com.unatxe.quicklist.navigation.NavigationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,7 +41,7 @@ class MainViewModel @Inject constructor(
             val finalList = initialQList.filter {
                 it.name.lowercase().contains(listToSearch.lowercase())
             }
-            uiState.even(finalList)
+            uiState.evenArray(finalList)
 
             uiState.sortBy {
                 it.id
@@ -63,7 +63,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch((Dispatchers.IO)) {
             getListsUseCase().collect {
                 val updateListCompose = QListCompose.from(it)
-                initialQList.even(updateListCompose)
+                initialQList.evenArray(updateListCompose)
                 initialQList.update(updateListCompose)
                 searchChanged(listToSearch)
             }
