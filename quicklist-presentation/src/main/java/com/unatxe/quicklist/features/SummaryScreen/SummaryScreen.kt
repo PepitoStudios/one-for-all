@@ -1,4 +1,4 @@
-package com.unatxe.quicklist.features.mainScreen
+package com.unatxe.quicklist.features.SummaryScreen
 
 import ExcludeFromJacocoGeneratedReport
 import android.content.res.Configuration
@@ -17,7 +17,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
 import com.unatxe.quicklist.components.QListSummaryComponent
 import com.unatxe.quicklist.components.search.SearchComponent
+import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.helpers.ViewModelPreviewHelper.previewMainViewModel
 import com.unatxe.quicklist.ui.theme.One4allTheme
 import com.unatxe.quicklist.ui.theme.h3Medium
@@ -40,7 +40,7 @@ fun MainScreen(
     viewModel: IMainViewModel
 ) {
     viewModel.updateList
-    val authUiState = remember {
+    val uiState = remember {
         viewModel.uiState
     }
 
@@ -60,7 +60,7 @@ fun MainScreen(
         content = { padding ->
             Column() {
                 SearchComponent(
-                    Modifier.padding(
+                    modifier = Modifier.padding(
                         start = 40.dp,
                         end = 40.dp,
                         top = padding.calculateTopPadding(),
@@ -73,6 +73,14 @@ fun MainScreen(
                         viewModel.searchChanged(it)
                     }
                 )
+
+                val detailListClick: (id: Int) -> Unit = {
+                    viewModel.listClicked(it)
+                }
+                val favouriteClick: (qListCompose: QListCompose) -> Unit = {
+                    viewModel.favouriteClicked(it)
+                }
+
                 LazyColumn(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = PaddingValues(all = 16.dp),
@@ -80,18 +88,19 @@ fun MainScreen(
                     modifier = Modifier.fillMaxHeight()
                 ) {
                     items(
-                        items = authUiState,
+                        items = uiState,
                         key = { it.id }
                     ) {
+                        val modifier = remember { Modifier.animateItemPlacement() }
+                        val qList = remember { it }
+                        val detailListClickRemember = remember { detailListClick }
+                        val favouriteClickRemember = remember { favouriteClick }
+
                         QListSummaryComponent(
-                            Modifier.animateItemPlacement(),
-                            it,
-                            onDetailListClick = {
-                                viewModel.listClicked(it.id)
-                            },
-                            onFavoriteClick = {
-                                viewModel.favouriteClicked(it)
-                            }
+                            modifier,
+                            qList,
+                            onDetailListClick = detailListClickRemember,
+                            onFavoriteClick = favouriteClickRemember
 
                         )
                     }

@@ -2,7 +2,7 @@ object Versions {
     const val compose = "1.2.0"
     const val composeMaterial = "1.0.0-alpha14"
     const val kotlin = "1.7.0" //Compatibility with compose
-    const val gradle = "7.4.0-alpha08"
+    const val gradle = "7.4.0-alpha09"
     const val googleServices = "4.3.0"
     const val crashlyticsGradle = "2.9.1"
     const val performanceGradle = "1.4.1"

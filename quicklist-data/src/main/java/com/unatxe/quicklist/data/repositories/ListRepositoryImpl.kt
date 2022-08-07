@@ -1,8 +1,13 @@
 package com.unatxe.quicklist.data.repositories
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.RoomDatabase
+import androidx.room.withTransaction
 import com.unatxe.quicklist.data.dao.QListDao
 import com.unatxe.quicklist.data.entities.QListData
 import com.unatxe.quicklist.data.entities.QListItemData
+import com.unatxe.quicklist.data.entities.QListModifyUpdate
 import com.unatxe.quicklist.domain.entities.QList
 import com.unatxe.quicklist.domain.entities.QListItem
 import com.unatxe.quicklist.domain.repository.QListRepository
@@ -14,25 +19,30 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import org.joda.time.DateTime
 
-class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QListRepository {
+class ListRepositoryImpl @Inject constructor(
+    val qListDao: () -> QListDao,
+    private val roomDatabase: () -> RoomDatabase
+) :
+    QListRepository {
 
     override fun getList(listId: Int): Flow<QList> {
-        return flow {
-            val result = qListDao().get(listId)
-            val qList = QList(
-                id = result.list.id,
-                name = result.list.name,
-                isFavourite = result.list.isFavourite,
-                createdAt = DateTime(result.list.dateCreated),
-                updatedAt = DateTime(result.list.dateEdited)
-            )
-            qList.addItems(
-                result.qListItems.map {
-                    QListItem(it.id, it.text, it.isChecked, qList)
-                }
-            )
-            this.emit(qList)
-        }.flowOn(Dispatchers.IO)
+        return qListDao().get(listId)
+            .map { result ->
+                val qList = QList(
+                    id = result.list.id,
+                    name = result.list.name,
+                    isFavourite = result.list.isFavourite,
+                    createdAt = DateTime(result.list.dateCreated),
+                    updatedAt = DateTime(result.list.dateEdited)
+                )
+
+                qList.addItems(
+                    result.qListItems.map {
+                        QListItem(it.id, it.text, it.isChecked, qList.id)
+                    }
+                )
+                qList
+            }.flowOn(Dispatchers.IO)
     }
 
     override fun getLists(): Flow<List<QList>> {
@@ -54,7 +64,7 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
                                     qListItemData.id,
                                     qListItemData.text,
                                     qListItemData.isChecked,
-                                    qList
+                                    qList.id
                                 )
                             }
                         )
@@ -70,7 +80,7 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
             val id = qListDao().insert(
                 QListData(name = qList.name, isFavourite = qList.isFavourite)
             )
-            val qListData = qListDao().get(id.toInt())
+            val qListData = qListDao().getSync(id.toInt())
             this.emit(
                 QList(
                     id = qListData.list.id,
@@ -90,43 +100,47 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun updateList(list: QList): Flow<QList> {
+    override fun updateList(qList: QList): Flow<QList> {
         return flow {
-            val id = qListDao().update(
+            qListDao().update(
                 QListData(
-                    id = list.id,
-                    name = list.name,
-                    isFavourite = list.isFavourite,
-                    dateCreated = list.createdAt.millis,
-                    dateEdited = System.currentTimeMillis()
+                    id = qList.id,
+                    name = qList.name,
+                    isFavourite = qList.isFavourite,
+                    dateCreated = qList.createdAt.millis,
+                    dateEdited = qList.updatedAt.millis
                 )
             )
-            val qListData = qListDao().get(list.id)
-            val qList = QList(
+            val qListData = qListDao().getSync(qList.id)
+            val newQList = QList(
                 id = qListData.list.id,
                 name = qListData.list.name,
                 isFavourite = qListData.list.isFavourite,
                 createdAt = DateTime(qListData.list.dateCreated),
                 updatedAt = DateTime(qListData.list.dateEdited)
             )
-            qList.addItems(
+            newQList.addItems(
                 qListData.qListItems.map {
-                    QListItem(it.id, it.text, it.isChecked, qList)
+                    QListItem(it.id, it.text, it.isChecked, qList.id)
                 }
             )
-            emit(qList)
+            emit(newQList)
         }.flowOn(Dispatchers.IO)
     }
 
     override fun insertListItem(qListItem: QListItem): Flow<QListItem> {
         return flow {
-            val id = qListDao().insert(
-                QListItemData(
-                    text = qListItem.text,
-                    isChecked = qListItem.checked,
-                    listId = qListItem.qList.id
+            var id = 0L
+            roomDatabase().withTransaction {
+                id = qListDao().insert(
+                    QListItemData(
+                        text = qListItem.text,
+                        isChecked = qListItem.checked,
+                        listId = qListItem.idList
+                    )
                 )
-            )
+                updateModifiedDate(qListItem.idList)
+            }
 
             val qListData = qListDao().getItem(id.toInt())
 
@@ -135,7 +149,7 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
                     id = qListData.id,
                     text = qListData.text,
                     checked = qListData.isChecked,
-                    qList = qListItem.qList
+                    idList = qListItem.idList
                 )
             )
         }.flowOn(Dispatchers.IO)
@@ -143,38 +157,51 @@ class ListRepositoryImpl @Inject constructor(val qListDao: () -> QListDao) : QLi
 
     override fun deleteListItem(qListItem: QListItem): Flow<Int> {
         return flow {
-            val result = qListDao().delete(
-                QListItemData(
-                    id = qListItem.id,
-                    text = qListItem.text,
-                    isChecked = qListItem.checked,
-                    listId = qListItem.qList.id
+            val result = roomDatabase().withTransaction {
+                val result = qListDao().delete(
+                    QListItemData(
+                        id = qListItem.id,
+                        text = qListItem.text,
+                        isChecked = qListItem.checked,
+                        listId = qListItem.idList
+                    )
                 )
-            )
+                updateModifiedDate(qListItem.idList)
+                result
+            }
+
             this.emit(result)
         }.flowOn(Dispatchers.IO)
     }
 
     override fun updateListItem(qListItem: QListItem): Flow<QListItem> {
         return flow {
-            val id = qListDao().update(
-                QListItemData(
-                    id = qListItem.id,
-                    text = qListItem.text,
-                    isChecked = qListItem.checked,
-                    listId = qListItem.qList.id
+            roomDatabase().withTransaction {
+                qListDao().update(
+                    QListItemData(
+                        id = qListItem.id,
+                        text = qListItem.text,
+                        isChecked = qListItem.checked,
+                        listId = qListItem.idList
+                    )
                 )
-            )
+                updateModifiedDate(qListItem.idList)
+            }
 
-            val qListItemRetrieve = qListDao().getItem(id)
+            val qListItemRetrieve = qListDao().getItem(qListItem.idList)
+
             this.emit(
                 QListItem(
                     id = qListItemRetrieve.id,
                     text = qListItemRetrieve.text,
                     checked = qListItemRetrieve.isChecked,
-                    qList = qListItem.qList
+                    idList = qListItem.idList
                 )
             )
         }.flowOn(Dispatchers.IO)
+    }
+
+    private fun updateModifiedDate(id: Int) {
+        qListDao().updateModify(QListModifyUpdate(id))
     }
 }

@@ -8,7 +8,9 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.unatxe.quicklist.data.entities.QListData
 import com.unatxe.quicklist.data.entities.QListItemData
+import com.unatxe.quicklist.data.entities.QListModifyUpdate
 import com.unatxe.quicklist.data.entities.QListWithItemsData
+import com.unatxe.quicklist.data.repositories.ListRepositoryImpl
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -16,7 +18,11 @@ interface QListDao {
 
     @Transaction
     @Query("SELECT * FROM list_table WHERE id == :idList")
-    fun get(idList: Int): QListWithItemsData
+    fun get(idList: Int): Flow<QListWithItemsData>
+
+    @Transaction
+    @Query("SELECT * FROM list_table WHERE id == :idList")
+    fun getSync(idList: Int): QListWithItemsData
 
     @Transaction
     @Query("SELECT * FROM list_table")
@@ -30,6 +36,9 @@ interface QListDao {
 
     @Query("SELECT * FROM list_items_table WHERE id == :idItem")
     fun getItem(idItem: Int): QListItemData
+
+    @Update(entity = QListData::class)
+    fun updateModify(qListData: QListModifyUpdate): Int
 
     @Update
     fun update(qListData: QListData): Int

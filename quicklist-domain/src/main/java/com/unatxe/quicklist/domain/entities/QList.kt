@@ -16,8 +16,4 @@ data class QList(
     fun addItems(qListItems: List<QListItem>) {
         items.addAll(qListItems)
     }
-
-
-
-
 }

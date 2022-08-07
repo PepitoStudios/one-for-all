@@ -23,17 +23,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
+import com.unatxe.quicklist.components.search.FavouriteIconComponent
 import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.helpers.DateUtils
 import com.unatxe.quicklist.helpers.noRippleClickable
@@ -47,13 +46,13 @@ import org.joda.time.DateTime
 fun QListSummaryComponent(
     modifier: Modifier,
     qList: QListCompose,
-    onDetailListClick: () -> Unit = {},
-    onFavoriteClick: () -> Unit = {}
+    onDetailListClick: (id: Int) -> Unit = {},
+    onFavoriteClick: (qListCompose: QListCompose) -> Unit = {}
 ) {
     Card(
         modifier
             .clickable {
-                onDetailListClick()
+                onDetailListClick(qList.id)
             }
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
@@ -86,18 +85,9 @@ fun QListSummaryComponent(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                     ) {
-                        val image = AnimatedImageVector.animatedVectorResource(
-                            R.drawable.heart_unchecked_to_checked
-                        )
-                        Icon(
-                            painter = rememberAnimatedVectorPainter(image, qList.isFavourite.value),
-                            contentDescription = null,
-                            Modifier.size(width = 40.dp, height = 40.dp).padding(8.dp)
-                                .noRippleClickable {
-                                    onFavoriteClick()
-                                },
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        FavouriteIconComponent(qList.isFavourite){
+                            onFavoriteClick(qList)
+                        }
                         Text(qList.getTotalAndChecked(), style = bodyRegular)
                     }
                 }

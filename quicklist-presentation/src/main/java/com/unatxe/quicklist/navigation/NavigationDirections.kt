@@ -6,12 +6,11 @@ import androidx.navigation.navArgument
 
 object NavigationDirections {
 
-    val mainScreen  = object : NavigationCommand {
+    val mainScreen = object : NavigationCommand {
 
         override val arguments = emptyList<NamedNavArgument>()
 
         override val destination = "mainScreen"
-
     }
 
     object ListScreen {
@@ -28,7 +27,9 @@ object NavigationDirections {
 
             override val arguments = listArguments
 
-            override val destination = if (listId == null) "listScreen?$KEY_LIST_ID=$NO_VALUE" else "listScreen?$KEY_LIST_ID=$listId"
+            override val destination = if (listId == null) {
+                "listScreen?$KEY_LIST_ID=$NO_VALUE"
+            } else "listScreen?$KEY_LIST_ID=$listId"
         }
     }
 
@@ -37,6 +38,5 @@ object NavigationDirections {
         override val arguments = emptyList<NamedNavArgument>()
 
         override val destination = ""
-
     }
 }

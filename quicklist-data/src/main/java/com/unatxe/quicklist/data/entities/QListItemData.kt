@@ -10,4 +10,5 @@ data class QListItemData(
     public val id: Int = 0,
     @ColumnInfo(name = "text") val text: String,
     @ColumnInfo(name = "checked") val isChecked: Boolean,
-    @ColumnInfo(name = "listId") val listId: Int)
+    @ColumnInfo(name = "listId") val listId: Int
+)

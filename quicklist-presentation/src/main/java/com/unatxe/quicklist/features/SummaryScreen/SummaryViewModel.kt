@@ -1,15 +1,15 @@
-package com.unatxe.quicklist.features.mainScreen
+package com.unatxe.quicklist.features.SummaryScreen
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.unatxe.quicklist.domain.interactors.GetListUseCase
+import com.unatxe.quicklist.domain.interactors.GetListsUseCase
 import com.unatxe.quicklist.domain.interactors.UpdateListUseCase
 import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.entities.QListCompose.Companion.update
-import com.unatxe.quicklist.helpers.even
+import com.unatxe.quicklist.helpers.evenArray
 import com.unatxe.quicklist.navigation.NavigationDirections
 import com.unatxe.quicklist.navigation.NavigationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val getListUseCase: GetListUseCase,
+    private val getListsUseCase: GetListsUseCase,
     private val updateListUseCase: UpdateListUseCase,
     private val navigationManager: NavigationManager
 ) : ViewModel(), IMainViewModel {
@@ -41,7 +41,7 @@ class MainViewModel @Inject constructor(
             val finalList = initialQList.filter {
                 it.name.lowercase().contains(listToSearch.lowercase())
             }
-            uiState.even(finalList)
+            uiState.evenArray(finalList)
 
             uiState.sortBy {
                 it.id
@@ -60,10 +60,12 @@ class MainViewModel @Inject constructor(
     }
 
     override val updateList: Unit by lazy {
+
         viewModelScope.launch((Dispatchers.IO)) {
-            getListUseCase().collect {
+            getListsUseCase().collect {
+                Log.d("MainViewModel", "List updated")
                 val updateListCompose = QListCompose.from(it)
-                initialQList.even(updateListCompose)
+                initialQList.evenArray(updateListCompose)
                 initialQList.update(updateListCompose)
                 searchChanged(listToSearch)
             }

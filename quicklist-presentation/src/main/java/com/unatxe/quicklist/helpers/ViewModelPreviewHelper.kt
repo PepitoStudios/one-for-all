@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.unatxe.quicklist.entities.QListCompose
-import com.unatxe.quicklist.features.mainScreen.IMainViewModel
+import com.unatxe.quicklist.features.SummaryScreen.IMainViewModel
 import org.joda.time.DateTime
 
 object ViewModelPreviewHelper {

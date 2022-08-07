@@ -2,9 +2,9 @@ package com.unatxe.quicklist.ui.theme
 
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.unatxe.quicklist.R
@@ -21,12 +21,20 @@ val fontName = GoogleFont("Cabin")
 
 @OptIn(ExperimentalTextApi::class)
 val fontFamilyCabin = FontFamily(
-    Font(googleFont = fontName, fontProvider = provider)
+    Font(R.font.cabin_medium, weight = FontWeight.Medium),
+    Font(R.font.cabin_bold, weight = FontWeight.Bold),
+    Font(R.font.cabin_regular, weight = FontWeight.Normal)
 )
 
 val h3Medium = TextStyle(
     fontFamily = fontFamilyCabin,
     fontWeight = FontWeight.Medium,
+    fontSize = 24.sp
+)
+
+val h3Regular = TextStyle(
+    fontFamily = fontFamilyCabin,
+    fontWeight = FontWeight.Normal,
     fontSize = 24.sp
 )
 

@@ -56,7 +56,7 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideQListRepository(qListDao: Provider<QListDao>): QListRepository {
-        return ListRepositoryImpl(qListDao::get)
+    fun provideQListRepository(qListDao: Provider<QListDao>,quickListDatabase: Provider<QuickListDatabase>): QListRepository {
+        return ListRepositoryImpl(qListDao::get,quickListDatabase::get)
     }
 }

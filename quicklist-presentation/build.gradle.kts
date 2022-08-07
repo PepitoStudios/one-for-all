@@ -140,6 +140,16 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = ConfigData.jvmVersion
         freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+
+        freeCompilerArgs += "-P"
+        freeCompilerArgs +=
+            "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
+            project.buildDir.absolutePath + "/compose_metrics"
+
+        freeCompilerArgs += "-P"
+        freeCompilerArgs +=
+            "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
+            project.buildDir.absolutePath + "/compose_metrics"
     }
 }
 

@@ -1,6 +1,6 @@
 package com.unatxe.quicklist.domain.di
 
-import com.unatxe.quicklist.domain.interactors.GetListUseCase
+import com.unatxe.quicklist.domain.interactors.GetListsUseCase
 import com.unatxe.quicklist.domain.repository.QListRepository
 import dagger.Module
 import dagger.Provides
@@ -12,7 +12,7 @@ import dagger.hilt.components.SingletonComponent
 object InteractorsModule {
     @Provides
     fun provideGetListInteractor
-    (listRepository: QListRepository): GetListUseCase {
-        return GetListUseCase(listRepository)
+    (listRepository: QListRepository): GetListsUseCase {
+        return GetListsUseCase(listRepository)
     }
 }
