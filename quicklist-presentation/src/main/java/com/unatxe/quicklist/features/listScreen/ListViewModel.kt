@@ -1,9 +1,9 @@
 package com.unatxe.quicklist.features.listScreen
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @HiltViewModel
+@Stable
 class ListViewModel @Inject constructor(
     private val getListUseCase: GetListUseCase,
     savedStateHandle: SavedStateHandle
@@ -50,7 +51,7 @@ class ListViewModel @Inject constructor(
                     val mapped = QListCompose.from(it)
                     initialUIState.evenArray(mapped.items)
                     uiState.evenArray(mapped.items)
-                    calDone()
+                    showItemsDone()
                 }
             }
         }
@@ -59,29 +60,37 @@ class ListViewModel @Inject constructor(
     override fun doneClicked() {
         viewModelScope.launch(Dispatchers.IO) {
             showUncheckedItems.value = showUncheckedItems.value.not()
-            if (showUncheckedItems.value) {
-                uiState.evenArray(initialUIState)
-            } else {
-                val modifiedArray = initialUIState.filter {
-                    (it is QListItemType.QListItemCheckBox && it.checked.value).not()
-                }
-                uiState.evenArray(modifiedArray)
-            }
+            hideItemsDone()
         }
     }
 
-    private fun calDone() {
-        numCheckedItems.value = uiState
+    private fun hideItemsDone(){
+        if (showUncheckedItems.value) {
+            uiState.evenArray(initialUIState)
+        } else {
+            val modifiedArray = initialUIState.filter {
+                (it is QListItemType.QListItemCheckBox && it.checked.value).not()
+            }
+            uiState.evenArray(modifiedArray)
+        }
+    }
+
+    private fun showItemsDone() {
+        numCheckedItems.value = initialUIState
             .count { it is QListItemType.QListItemCheckBox && it.checked.value }
     }
 
     override fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox) {
-        qLisItem.checked.value = qLisItem.checked.value.not()
-        uiState.sortPositions()
-        calDone();
+        viewModelScope.launch(Dispatchers.IO) {
+            qLisItem.checked.value = qLisItem.checked.value.not()
+            uiState.sortPositions()
+            showItemsDone();
+            hideItemsDone()
+        }
+
     }
 }
-
+@Stable
 interface IListViewModel {
     val uiState: SnapshotStateList<QListItemType>
     val isCreationMode: Boolean

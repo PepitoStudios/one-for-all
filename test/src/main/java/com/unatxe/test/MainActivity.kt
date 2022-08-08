@@ -26,9 +26,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    Section("Paralax") {
+                    /*Section("Paralax") {
                         startActivity(Intent(this, ParallaxActivity::class.java))
-                    }
+                    }*/
+                    TestingScreen()
                 }
             }
         }

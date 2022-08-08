@@ -1,6 +1,7 @@
 package com.unatxe.quicklist.features.listScreen
 
 import android.content.res.Configuration
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -73,15 +74,14 @@ fun ListScreen(viewModel: IListViewModel) {
                 } else {
                     ItemListComponent(
                         uiState = uiState,
-                        numCheckedItems = viewModel.numCheckedItems.value,
-                        showUncheckedItems = viewModel.showUncheckedItems.value,
+                        numCheckedItems = viewModel.numCheckedItems,
+                        showUncheckedItems = viewModel.showUncheckedItems,
                         onCheckBoxChange = {
-                            viewModel.onCheckBoxChange(it)
-                        },
-                        onDoneClick = {
-                            viewModel.doneClicked()
+                            (viewModel::onCheckBoxChange)(it)
                         }
-                    )
+                    ) {
+                        viewModel.doneClicked()
+                    }
                 }
             }
         }
@@ -92,41 +92,59 @@ fun ListScreen(viewModel: IListViewModel) {
 @Composable
 fun ItemListComponent(
     uiState: SnapshotStateList<QListItemType>,
-    numCheckedItems: Int,
-    showUncheckedItems: Boolean,
+    numCheckedItems: MutableState<Int>,
+    showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
     onDoneClick: () -> Unit
 ) {
+
     LazyColumn() {
         items(
             items = uiState,
             key = { it.guid }
         ) { qLisItem ->
 
-            val modifier = Modifier.animateItemPlacement()
-            when (qLisItem) {
-                is QListItemType.QListItemCheckBox -> {
-                    QListCheckBox(
-                        modifier = modifier,
-                        text = qLisItem.text,
-                        checked = qLisItem.checked.value,
-                        onCheckBoxCheckedChange = {
-                            onCheckBoxChange(qLisItem)
-                        }
-                    )
+            val modifier = remember{ Modifier.animateItemPlacement() }
+            val qListItemSave = remember { mutableStateOf(qLisItem) }
+            val onDoneClickSave = remember { onDoneClick }
+            val onCheckBoxChangeSave = remember { onCheckBoxChange }
+            val numCheckedItemsSave = remember { numCheckedItems }
+            val showUncheckedItemsSave = remember { showUncheckedItems }
+            ItemsList(modifier, qListItemSave,numCheckedItemsSave,showUncheckedItemsSave,onCheckBoxChangeSave,onDoneClickSave)
+        }
+    }
+}
+@Composable
+fun ItemsList(
+    modifier: Modifier,
+    qLisItem: MutableState<QListItemType>,
+    numCheckedItems: MutableState<Int>,
+    showUncheckedItems: MutableState<Boolean>,
+    onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
+    onDoneClick: () -> Unit
+) {
+
+    when (qLisItem.value) {
+        is QListItemType.QListItemCheckBox -> {
+            QListCheckBox(
+                modifier = modifier,
+                text = (qLisItem.value as QListItemType.QListItemCheckBox).text,
+                checked = (qLisItem.value as QListItemType.QListItemCheckBox).checked.value,
+                onCheckBoxCheckedChange = {
+                    onCheckBoxChange(qLisItem.value as QListItemType.QListItemCheckBox)
                 }
-                QListItemType.QListItemDoneTitle -> {
-                    if (numCheckedItems > 0) {
-                        DoneComponent(
-                            modifier = modifier.clickable {
-                                onDoneClick()
-                            },
-                            text = stringResource(id = R.string.done),
-                            checkedItems = numCheckedItems,
-                            showDoneItems = showUncheckedItems
-                        )
-                    }
-                }
+            )
+        }
+        QListItemType.QListItemDoneTitle -> {
+            if (numCheckedItems.value > 0) {
+                DoneComponent(
+                    modifier = Modifier.clickable {
+                        onDoneClick()
+                    },
+                    text = stringResource(id = R.string.done),
+                    checkedItems = numCheckedItems.value,
+                    showDoneItems = showUncheckedItems.value
+                )
             }
         }
     }
