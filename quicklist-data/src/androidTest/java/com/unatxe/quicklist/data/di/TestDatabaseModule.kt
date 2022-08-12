@@ -1,7 +1,6 @@
 package com.unatxe.quicklist.data.di
 
 import android.content.Context
-import android.os.Looper
 import androidx.room.Room
 import com.unatxe.quicklist.data.QuickListDatabase
 import com.unatxe.quicklist.data.dao.QListDao
@@ -38,7 +37,10 @@ object TestDatabaseModule {
     }
 
     @Provides
-    fun provideQListRepository(qListDao: Provider<QListDao>): QListRepository {
-        return ListRepositoryImpl(qListDao::get)
+    fun provideQListRepository(
+        qListDao: Provider<QListDao>,
+        roomDatabase: Provider<QuickListDatabase>
+    ): QListRepository {
+        return ListRepositoryImpl(qListDao::get, roomDatabase::get)
     }
 }

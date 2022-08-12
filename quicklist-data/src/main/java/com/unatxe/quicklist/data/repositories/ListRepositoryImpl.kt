@@ -1,7 +1,5 @@
 package com.unatxe.quicklist.data.repositories
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import com.unatxe.quicklist.data.dao.QListDao
