@@ -4,12 +4,17 @@ import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,7 +41,6 @@ import com.unatxe.quicklist.entities.QListCompose
 import com.unatxe.quicklist.entities.QListItemType
 import com.unatxe.quicklist.features.detailScreen.component.QListDetaulDoneItemComponent
 import com.unatxe.quicklist.ui.theme.One4allTheme
-import com.unatxe.quicklist.ui.theme.h3Medium
 import com.unatxe.quicklist.ui.theme.h3Regular
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -50,7 +55,7 @@ fun ListScreen(viewModel: IListViewModel) {
     Scaffold(
         topBar = {
             MediumTopAppBar(
-
+                modifier = Modifier.shadow(elevation = 10.dp),
                 title = {
                     uiState.value?.name?.let {
                         Text(
@@ -67,7 +72,7 @@ fun ListScreen(viewModel: IListViewModel) {
                     }
                 },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
                 actions = {
                     uiState.value?.let { qListCompose ->
@@ -98,6 +103,9 @@ fun ListScreen(viewModel: IListViewModel) {
                             showUncheckedItems = viewModel.showUncheckedItems,
                             onCheckBoxChange = {
                                 (viewModel::onCheckBoxChange)(it)
+                            },
+                            onListItemValueChange = { itemCheckBox, value ->
+                                (viewModel::onListItemValueChange)(itemCheckBox, value)
                             }
                         ) {
                             viewModel.doneClicked()
@@ -105,7 +113,15 @@ fun ListScreen(viewModel: IListViewModel) {
                     }
                 }
             }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { viewModel.addItem() }
+            ) {
+                Icon(Icons.Filled.Add, stringResource(id = R.string.add_item))
+            }
         }
+
     )
 }
 
@@ -116,12 +132,24 @@ fun QListItemLazyComponent(
     numCheckedItems: MutableState<Int>,
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
+    onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
     onDoneClick: () -> Unit
 ) {
-    LazyColumn() {
+    val listState = rememberLazyListState(initialFirstVisibleItemScrollOffset = -1) //
+
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxWidth().fillMaxHeight()
+    ) {
+        item { // Keep this for prevent the first item scrolling behaviour
+            Box() {
+                Text("")
+            }
+        }
         items(
             items = uiState,
-            key = { it.guid }
+            key = { it.hashCode() },
+            contentType = { it.typeItem }
         ) { qLisItem ->
 
             val modifier = remember { Modifier.animateItemPlacement() }
@@ -138,6 +166,9 @@ fun QListItemLazyComponent(
             val onDoneClickRemember = remember {
                 onDoneClick
             }
+            val onListItemValueChangeRemember = remember {
+                onListItemValueChange
+            }
 
             QListItemColumnComponent(
                 modifier,
@@ -145,6 +176,7 @@ fun QListItemLazyComponent(
                 numCheckedItemsRemember,
                 showUncheckedItemsRemember,
                 onCheckBoxChangeRemember,
+                onListItemValueChangeRemember,
                 onDoneClickRemember
             )
         }
@@ -158,20 +190,21 @@ fun QListItemColumnComponent(
     numCheckedItems: MutableState<Int>,
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
+    onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
     onDoneClick: () -> Unit
 ) {
-    when (qLisItem) {
-        is QListItemType.QListItemCheckBox -> {
+    when (qLisItem.typeItem) {
+        QListItemType.QListItemTypeEnum.QListItemCheckBox -> {
+            val qListItemCheckBox = qLisItem as QListItemType.QListItemCheckBox
             QListDetailCheckItemComponent(
                 modifier = modifier,
-                text = qLisItem.text,
-                checked = qLisItem.checked,
-                onCheckBoxCheckedChange = {
-                    onCheckBoxChange(qLisItem)
-                }
+                text = qListItemCheckBox.text.value,
+                checked = qListItemCheckBox.checked,
+                onCheckBoxCheckedChange = { onCheckBoxChange(qListItemCheckBox) },
+                onListItemValueChange = { onListItemValueChange(qListItemCheckBox, it) }
             )
         }
-        QListItemType.QListItemDoneTitle -> {
+        QListItemType.QListItemTypeEnum.QListItemDoneTitle -> {
             val showDone by remember {
                 derivedStateOf {
                     numCheckedItems.value > 0
@@ -219,6 +252,12 @@ fun ListScreenPreview() {
             override fun onBackClicked() {}
 
             override fun onFavoriteClick(qListCompose: QListCompose) {}
+            override fun onListItemValueChange(
+                qListItem: QListItemType.QListItemCheckBox,
+                valueItem: String
+            ) {}
+
+            override fun addItem() {}
         })
     }
 }

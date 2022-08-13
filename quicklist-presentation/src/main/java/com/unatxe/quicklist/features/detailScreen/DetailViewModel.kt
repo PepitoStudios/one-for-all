@@ -1,5 +1,6 @@
 package com.unatxe.quicklist.features.detailScreen
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
@@ -18,8 +19,12 @@ import com.unatxe.quicklist.navigation.NavigationDirections
 import com.unatxe.quicklist.navigation.NavigationDirections.ListScreen.NO_VALUE
 import com.unatxe.quicklist.navigation.NavigationManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -56,6 +61,7 @@ class ListViewModel @Inject constructor(
         if (idList != NO_VALUE) {
             viewModelScope.launch(Dispatchers.IO) {
                 getListUseCase.invoke(idList).collect {
+                    Log.d("DetailViewModel", "List updated")
                     val mapped = QListCompose.from(it)
                     if (uiState.value == null) {
                         uiState.value = mapped
@@ -63,9 +69,11 @@ class ListViewModel @Inject constructor(
                     itemListInitialState.evenArray(mapped.items)
                     itemListInitialState.update(mapped.items)
 
-                    uiState.value?.items?.evenArray(mapped.items)
-                    uiState.value?.items?.sortPositions()
-                    uiState.value!!.update(mapped)
+                    uiState.value?.items?.let { qListItemType ->
+                        qListItemType.evenArray(mapped.items)
+                        qListItemType.sortPositions()
+                        uiState.value!!.update(mapped)
+                    }
                     showItemsDone()
                     hideItemsDone()
                 }
@@ -105,6 +113,36 @@ class ListViewModel @Inject constructor(
         }
     }
 
+    private val testTask: MutableMap<QListItemType, Timer> = mutableMapOf()
+
+    override fun onListItemValueChange(
+        qListItem: QListItemType.QListItemCheckBox,
+        valueItem: String
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (testTask.containsKey(qListItem)) {
+                val timer = testTask.getValue(qListItem)
+                timer.cancel()
+            }
+            val timer = Timer()
+            testTask[qListItem] = timer
+
+            timer.schedule(
+                object : TimerTask() {
+                    override fun run() {
+                        testTask.remove(qListItem)
+                        qListItem.text.value = valueItem
+                        val qListItemUpdated = QListItemType.to(qListItem)
+                        viewModelScope.launch(Dispatchers.IO) {
+                            updateListItemUseCase.invoke(qListItemUpdated).collect()
+                        }
+                    }
+                },
+                2000
+            )
+        }
+    }
+
     override fun onBackClicked() {
         navigationManager.navController?.popBackStack()
     }
@@ -116,7 +154,9 @@ class ListViewModel @Inject constructor(
                 updateListUseCase.invoke(QListCompose.to(it)).collect {}
             }
         }
+    }
 
+    override fun addItem() {
     }
 }
 
@@ -131,4 +171,7 @@ interface IListViewModel {
     fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox)
     fun onBackClicked()
     fun onFavoriteClick(qListCompose: QListCompose)
+
+    fun onListItemValueChange(qListItem: QListItemType.QListItemCheckBox, valueItem: String)
+    fun addItem()
 }

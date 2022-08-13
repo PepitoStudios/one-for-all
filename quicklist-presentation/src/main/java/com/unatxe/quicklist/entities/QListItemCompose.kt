@@ -1,12 +1,26 @@
 package com.unatxe.quicklist.entities
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.unatxe.quicklist.domain.entities.QListItem
 import java.util.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapLatest
 
-sealed class QListItemType(val guid: String = UUID.randomUUID().toString()) {
+sealed class QListItemType(
+    val typeItem: QListItemTypeEnum
+) {
 
     override fun equals(other: Any?): Boolean {
         if (other is QListItemDoneTitle && this is QListItemDoneTitle) {
@@ -15,21 +29,40 @@ sealed class QListItemType(val guid: String = UUID.randomUUID().toString()) {
         return false
     }
 
+    override fun hashCode(): Int {
+        return typeItem.hashCode()
+    }
+
     data class QListItemCheckBox(
         val id: Int,
-        val text: String,
+        val text: MutableState<String>,
         val checked: MutableState<Boolean>,
         val position: Int = id,
         val idList: Int
-    ) : QListItemType() {
+    ) : QListItemType(typeItem = QListItemTypeEnum.QListItemCheckBox) {
         override fun equals(other: Any?): Boolean {
             if (other is QListItemCheckBox && other.id == id) {
                 return true
             }
             return false
         }
+
+        override fun hashCode(): Int {
+            var result = super.hashCode()
+            result = 31 * result + id
+            result = 31 * result + text.hashCode()
+            result = 31 * result + checked.hashCode()
+            result = 31 * result + position
+            result = 31 * result + idList
+            return result
+        }
     }
-    object QListItemDoneTitle : QListItemType()
+    object QListItemDoneTitle : QListItemType(typeItem = QListItemTypeEnum.QListItemDoneTitle)
+
+    enum class QListItemTypeEnum {
+        QListItemCheckBox,
+        QListItemDoneTitle
+    }
 
     companion object {
         fun from(items: List<QListItem>): SnapshotStateList<QListItemType> {
@@ -39,7 +72,7 @@ sealed class QListItemType(val guid: String = UUID.randomUUID().toString()) {
             }.map {
                 QListItemType.QListItemCheckBox(
                     it.id,
-                    it.text,
+                    mutableStateOf(it.text),
                     mutableStateOf(it.checked),
                     it.id,
                     it.idList
@@ -65,7 +98,7 @@ sealed class QListItemType(val guid: String = UUID.randomUUID().toString()) {
         ): QListItem {
             return QListItem(
                 qListItem.id,
-                qListItem.text,
+                qListItem.text.value,
                 qListItem.checked.value,
                 qListItem.idList
             )

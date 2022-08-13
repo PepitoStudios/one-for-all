@@ -3,5 +3,6 @@
     <string name="todayAt">Today at %1$s</string>
     <string name="search_list">Search List</string>
     <string name="done">Done</string>
+    <string name="add_item">Add Item to the list</string>
 
 </resources>
