@@ -1,22 +1,11 @@
 package com.unatxe.quicklist.entities
 
-import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.unatxe.quicklist.domain.entities.QListItem
 import java.util.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
 
 sealed class QListItemType(
     val typeItem: QListItemTypeEnum
@@ -38,7 +27,12 @@ sealed class QListItemType(
         val text: MutableState<String>,
         val checked: MutableState<Boolean>,
         val position: Int = id,
-        val idList: Int
+        val idList: Int,
+        val isEditMode: MutableState<Boolean> = mutableStateOf(false),
+        val isFocused: MutableState<Boolean> = mutableStateOf(false),
+        @Stable var isFirstTimeEditable: Boolean = true,
+        @Stable var isEditModePassed: Boolean = false
+
     ) : QListItemType(typeItem = QListItemTypeEnum.QListItemCheckBox) {
         override fun equals(other: Any?): Boolean {
             if (other is QListItemCheckBox && other.id == id) {

@@ -1,11 +1,20 @@
 package com.unatxe.quicklist.features.detailScreen
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +22,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -20,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -29,10 +42,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
 import com.unatxe.quicklist.components.QListDetailCheckItemComponent
@@ -51,6 +67,10 @@ fun ListScreen(viewModel: IListViewModel) {
     }
 
     viewModel.initData
+
+    val someQListItemIsFocused = remember { mutableStateOf<QListItemType.QListItemCheckBox?>(null) }
+
+    val currentItemIsFocused = remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -88,10 +108,9 @@ fun ListScreen(viewModel: IListViewModel) {
             Box(
                 modifier = Modifier.padding(
                     top = padding.calculateTopPadding(),
-                    start = 16.dp,
-                    end = 16.dp,
                     bottom = padding.calculateBottomPadding()
                 )
+
             ) {
                 if (viewModel.isCreationMode) {
                     Text("ListScreen without id")
@@ -106,6 +125,11 @@ fun ListScreen(viewModel: IListViewModel) {
                             },
                             onListItemValueChange = { itemCheckBox, value ->
                                 (viewModel::onListItemValueChange)(itemCheckBox, value)
+                            },
+                            onFocusMode = { qListItemCheckBox ->
+
+                                someQListItemIsFocused.value = qListItemCheckBox
+                                currentItemIsFocused.value = qListItemCheckBox.isFocused.value || qListItemCheckBox.isEditMode.value
                             }
                         ) {
                             viewModel.doneClicked()
@@ -115,13 +139,84 @@ fun ListScreen(viewModel: IListViewModel) {
             }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.addItem() }
+            AnimatedVisibility(
+                visible = !currentItemIsFocused.value,
+                enter = slideInHorizontally(
+                    animationSpec = spring(
+                        stiffness = Spring.StiffnessMediumLow,
+                        visibilityThreshold = IntOffset.VisibilityThreshold
+                    ),
+                    initialOffsetX = {
+                        it + it / 2
+                    }
+                    // Expand from the top.
+
+                ),
+                exit = slideOutHorizontally(
+                    animationSpec = spring(
+                        stiffness = Spring.StiffnessMediumLow,
+                        visibilityThreshold = IntOffset.VisibilityThreshold
+                    ),
+                    targetOffsetX = {
+                        it + it / 2
+                    }
+                )
             ) {
-                Icon(Icons.Filled.Add, stringResource(id = R.string.add_item))
+                FloatingActionButton(
+                    onClick = { viewModel.addItem() }
+                ) {
+                    Icon(Icons.Filled.Add, stringResource(id = R.string.add_item))
+                }
+            }
+        },
+        bottomBar = {
+            AnimatedVisibility(
+                visible = currentItemIsFocused.value,
+                enter = expandVertically(
+                    animationSpec = spring(
+                        stiffness = Spring.StiffnessLow,
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        visibilityThreshold = IntSize.VisibilityThreshold
+                    ),
+                    // Expand from the top.
+                    expandFrom = Alignment.Top
+                ),
+                exit = shrinkVertically(
+                    animationSpec = spring(
+                        stiffness = Spring.StiffnessLow,
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        visibilityThreshold = IntSize.VisibilityThreshold
+                    ),
+                    // Expand from the top.
+                    shrinkTowards = Alignment.Bottom
+                )
+            ) {
+                BottomAppBar(
+                    modifier = Modifier.height(72.dp).shadow(elevation = 10.dp),
+                    floatingActionButton = {
+                        SmallFloatingActionButton(
+                            onClick = {
+                                someQListItemIsFocused.value!!.isEditMode.value =
+                                    someQListItemIsFocused.value!!.isEditMode.value.not()
+                            }
+                        ) {
+                            Icon(Icons.Filled.Edit, stringResource(id = R.string.edit_item))
+                        }
+                    },
+                    icons = {
+                        IconButton(onClick = { /* doSomething() */ }) {
+                            Icon(Icons.Filled.Check, contentDescription = "Localized description")
+                        }
+                        IconButton(onClick = { /* doSomething() */ }) {
+                            Icon(
+                                Icons.Filled.Edit,
+                                contentDescription = "Localized description"
+                            )
+                        }
+                    }
+                )
             }
         }
-
     )
 }
 
@@ -133,6 +228,7 @@ fun QListItemLazyComponent(
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
     onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
+    onFocusMode: (QListItemType.QListItemCheckBox) -> Unit,
     onDoneClick: () -> Unit
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemScrollOffset = -1) //
@@ -170,6 +266,10 @@ fun QListItemLazyComponent(
                 onListItemValueChange
             }
 
+            val onFocusChangeRemember = remember {
+                onFocusMode
+            }
+
             QListItemColumnComponent(
                 modifier,
                 qListItemSave,
@@ -177,7 +277,9 @@ fun QListItemLazyComponent(
                 showUncheckedItemsRemember,
                 onCheckBoxChangeRemember,
                 onListItemValueChangeRemember,
+                onFocusChangeRemember,
                 onDoneClickRemember
+
             )
         }
     }
@@ -191,6 +293,7 @@ fun QListItemColumnComponent(
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
     onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
+    onFocusMode: (QListItemType.QListItemCheckBox) -> Unit,
     onDoneClick: () -> Unit
 ) {
     when (qLisItem.typeItem) {
@@ -198,10 +301,10 @@ fun QListItemColumnComponent(
             val qListItemCheckBox = qLisItem as QListItemType.QListItemCheckBox
             QListDetailCheckItemComponent(
                 modifier = modifier,
-                text = qListItemCheckBox.text.value,
-                checked = qListItemCheckBox.checked,
+                model = qListItemCheckBox,
                 onCheckBoxCheckedChange = { onCheckBoxChange(qListItemCheckBox) },
-                onListItemValueChange = { onListItemValueChange(qListItemCheckBox, it) }
+                onListItemValueChange = { onListItemValueChange(qListItemCheckBox, it) },
+                onFocusMode = onFocusMode
             )
         }
         QListItemType.QListItemTypeEnum.QListItemDoneTitle -> {
