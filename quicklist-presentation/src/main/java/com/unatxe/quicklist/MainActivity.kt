@@ -4,10 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -37,6 +42,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             val navController = rememberAnimatedNavController()
 
@@ -50,9 +56,11 @@ class MainActivity : ComponentActivity() {
 
             One4allTheme {
                 // A surface container using the 'background' color from the theme
-                Surface() {
-                     NormalFlow(navController)
-                    //TestFlow(navController = navController)
+                Surface(
+                    modifier = Modifier.statusBarsPadding().navigationBarsPadding().imePadding()
+                ) {
+                    NormalFlow(navController)
+                    // TestFlow(navController = navController)
                 }
             }
         }

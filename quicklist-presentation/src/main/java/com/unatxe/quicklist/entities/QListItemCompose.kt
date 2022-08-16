@@ -1,7 +1,6 @@
 package com.unatxe.quicklist.entities
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.unatxe.quicklist.domain.entities.QListItem
@@ -29,9 +28,7 @@ sealed class QListItemType(
         val position: Int = id,
         val idList: Int,
         val isEditMode: MutableState<Boolean> = mutableStateOf(false),
-        val isFocused: MutableState<Boolean> = mutableStateOf(false),
-        @Stable var isFirstTimeEditable: Boolean = true,
-        @Stable var isEditModePassed: Boolean = false
+        val isFocused: MutableState<Boolean> = mutableStateOf(false)
 
     ) : QListItemType(typeItem = QListItemTypeEnum.QListItemCheckBox) {
         override fun equals(other: Any?): Boolean {
@@ -102,9 +99,21 @@ sealed class QListItemType(
             listCompose.forEach { qListItemType ->
                 if (qListItemType is QListItemCheckBox) {
                     val item = this.find {
-                        it is QListItemCheckBox && qListItemType.id == it.id
-                    } as QListItemCheckBox
-                    item.checked.value = qListItemType.checked.value
+                        it is QListItemCheckBox &&
+                            qListItemType.id == it.id &&
+                            (
+                                qListItemType.checked.value != it.checked.value ||
+                                    qListItemType.text.value != it.text.value
+                                )
+                    } as QListItemCheckBox?
+                    item?.let {
+                        if (it.checked.value != qListItemType.checked.value) {
+                            it.checked.value = qListItemType.checked.value
+                        }
+                        if (it.text.value != qListItemType.text.value) {
+                            it.text.value = qListItemType.text.value
+                        }
+                    }
                 }
             }
             return this

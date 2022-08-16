@@ -1,22 +1,25 @@
 package com.unatxe.quicklist.features.detailScreen
 
 import android.content.res.Configuration
-import androidx.compose.animation.AnimatedVisibility
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility as AnimatedVisibility1
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -36,18 +39,20 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
@@ -58,8 +63,13 @@ import com.unatxe.quicklist.entities.QListItemType
 import com.unatxe.quicklist.features.detailScreen.component.QListDetaulDoneItemComponent
 import com.unatxe.quicklist.ui.theme.One4allTheme
 import com.unatxe.quicklist.ui.theme.h3Regular
+import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalAnimationApi::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
 fun ListScreen(viewModel: IListViewModel) {
     val uiState = remember {
@@ -68,16 +78,12 @@ fun ListScreen(viewModel: IListViewModel) {
 
     viewModel.initData
 
-    val someQListItemIsFocused = remember { mutableStateOf<QListItemType.QListItemCheckBox?>(null) }
-
-    val currentItemIsFocused = remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
             MediumTopAppBar(
                 modifier = Modifier.shadow(elevation = 10.dp),
                 title = {
-                    uiState.value?.name?.let {
+                    uiState.value.name.let {
                         Text(
                             text = it,
                             style = h3Regular
@@ -95,7 +101,7 @@ fun ListScreen(viewModel: IListViewModel) {
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
                 actions = {
-                    uiState.value?.let { qListCompose ->
+                    uiState.value.let { qListCompose ->
                         FavouriteIconComponent(qListCompose.isFavourite) {
                             viewModel.onFavoriteClick(qListCompose)
                         }
@@ -105,7 +111,7 @@ fun ListScreen(viewModel: IListViewModel) {
             )
         },
         content = { padding ->
-            Box(
+            Column(
                 modifier = Modifier.padding(
                     top = padding.calculateTopPadding(),
                     bottom = padding.calculateBottomPadding()
@@ -115,9 +121,10 @@ fun ListScreen(viewModel: IListViewModel) {
                 if (viewModel.isCreationMode) {
                     Text("ListScreen without id")
                 } else {
-                    uiState.value?.let { qListCompose ->
+                    if (uiState.value.isInitialized.value) {
                         QListItemLazyComponent(
-                            uiState = qListCompose.items,
+                            modifier = Modifier.weight(1f, true),
+                            uiState = uiState.value,
                             numCheckedItems = viewModel.numCheckedItems,
                             showUncheckedItems = viewModel.showUncheckedItems,
                             onCheckBoxChange = {
@@ -126,10 +133,9 @@ fun ListScreen(viewModel: IListViewModel) {
                             onListItemValueChange = { itemCheckBox, value ->
                                 (viewModel::onListItemValueChange)(itemCheckBox, value)
                             },
-                            onFocusMode = { qListItemCheckBox ->
+                            eventEmitter = { events ->
 
-                                someQListItemIsFocused.value = qListItemCheckBox
-                                currentItemIsFocused.value = qListItemCheckBox.isFocused.value || qListItemCheckBox.isEditMode.value
+                                (viewModel::onEventReceived)(events)
                             }
                         ) {
                             viewModel.doneClicked()
@@ -139,9 +145,11 @@ fun ListScreen(viewModel: IListViewModel) {
             }
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = !currentItemIsFocused.value,
-                enter = slideInHorizontally(
+            AnimatedVisibility1(
+                visible = uiState.value.itemIsSelected.value.not(),
+                enter = scaleIn(),
+                exit = scaleOut()
+                /*enter = slideInHorizontally(
                     animationSpec = spring(
                         stiffness = Spring.StiffnessMediumLow,
                         visibilityThreshold = IntOffset.VisibilityThreshold
@@ -151,8 +159,8 @@ fun ListScreen(viewModel: IListViewModel) {
                     }
                     // Expand from the top.
 
-                ),
-                exit = slideOutHorizontally(
+                ),*/
+                /*exit = slideOutHorizontally(
                     animationSpec = spring(
                         stiffness = Spring.StiffnessMediumLow,
                         visibilityThreshold = IntOffset.VisibilityThreshold
@@ -160,7 +168,7 @@ fun ListScreen(viewModel: IListViewModel) {
                     targetOffsetX = {
                         it + it / 2
                     }
-                )
+                )*/
             ) {
                 FloatingActionButton(
                     onClick = { viewModel.addItem() }
@@ -170,8 +178,8 @@ fun ListScreen(viewModel: IListViewModel) {
             }
         },
         bottomBar = {
-            AnimatedVisibility(
-                visible = currentItemIsFocused.value,
+            AnimatedVisibility1(
+                visible = uiState.value.itemIsSelected.value,
                 enter = expandVertically(
                     animationSpec = spring(
                         stiffness = Spring.StiffnessLow,
@@ -192,12 +200,11 @@ fun ListScreen(viewModel: IListViewModel) {
                 )
             ) {
                 BottomAppBar(
-                    modifier = Modifier.height(72.dp).shadow(elevation = 10.dp),
+                    modifier = Modifier.height(72.dp).imePadding(),
                     floatingActionButton = {
                         SmallFloatingActionButton(
                             onClick = {
-                                someQListItemIsFocused.value!!.isEditMode.value =
-                                    someQListItemIsFocused.value!!.isEditMode.value.not()
+                                viewModel.onEventReceived(DetailViewModelEvent.EditRequest())
                             }
                         ) {
                             Icon(Icons.Filled.Edit, stringResource(id = R.string.edit_item))
@@ -220,36 +227,102 @@ fun ListScreen(viewModel: IListViewModel) {
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun QListItemLazyComponent(
-    uiState: SnapshotStateList<QListItemType>,
+    modifier: Modifier,
+    uiState: QListCompose,
     numCheckedItems: MutableState<Int>,
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
     onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
-    onFocusMode: (QListItemType.QListItemCheckBox) -> Unit,
+    eventEmitter: (event: DetailViewModelEvent) -> Unit,
     onDoneClick: () -> Unit
 ) {
-    val listState = rememberLazyListState(initialFirstVisibleItemScrollOffset = -1) //
+    val listState = rememberLazyListState() //
 
+    var userScrollEnabled by remember { mutableStateOf(true) }
+
+    /*val editMode by remember {
+        derivedStateOf {
+            uiState.isEditMode.value
+        }
+    }*/
+
+   /* val selectedMode by remember {
+        derivedStateOf {
+            uiState.componentSelected.value != null
+        }
+    }*/
+
+    if (uiState.componentSelected.value != null) {
+        Log.d("Test", "Selected Mode ${uiState.componentSelected.value!!.text}")
+        LaunchedEffect(Unit) {
+            delay(100)
+            val index = uiState.items.indexOf(uiState.componentSelected.value!!)
+            listState.scrollToItem(index)
+        }
+    }
+    if (uiState.isEditMode.value) {
+        Log.d("Test", "EditMode ${uiState.componentSelected.value!!.text}")
+       // userScrollEnabled = false
+        LaunchedEffect(Unit) {
+            delay(100)
+            val index = uiState.items.indexOf(uiState.componentSelected.value!!)
+            listState.scrollToItem(index + 1)
+        }
+    } else {
+       // userScrollEnabled = true
+    }
+
+    LazyColumnComponent(
+        listState,
+        modifier,
+        userScrollEnabled,
+        uiState,
+        numCheckedItems,
+        showUncheckedItems,
+        onCheckBoxChange,
+        onListItemValueChange,
+        eventEmitter,
+        onDoneClick
+    )
+}
+
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
+@Composable
+fun LazyColumnComponent(
+    listState: LazyListState,
+    modifier: Modifier,
+    userScrollEnabled: Boolean,
+    uiState: QListCompose,
+    numCheckedItems: MutableState<Int>,
+    showUncheckedItems: MutableState<Boolean>,
+    onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
+    onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
+    eventEmitter: (event: DetailViewModelEvent) -> Unit,
+    onDoneClick: () -> Unit
+) {
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxWidth().fillMaxHeight()
+        modifier = modifier,
+        userScrollEnabled = userScrollEnabled
     ) {
+        Modifier.modifierLocalConsumer {
+            Log.d("TAG", "TAG")
+        }
         item { // Keep this for prevent the first item scrolling behaviour
             Box() {
                 Text("")
             }
         }
         items(
-            items = uiState,
+            items = uiState.items,
             key = { it.hashCode() },
             contentType = { it.typeItem }
         ) { qLisItem ->
 
             val modifier = remember { Modifier.animateItemPlacement() }
-            val qListItemSave = remember { qLisItem }
             val numCheckedItemsRemember = remember {
                 numCheckedItems
             }
@@ -266,21 +339,27 @@ fun QListItemLazyComponent(
                 onListItemValueChange
             }
 
-            val onFocusChangeRemember = remember {
-                onFocusMode
+            val eventEmitterRemember = remember {
+                eventEmitter
             }
 
             QListItemColumnComponent(
                 modifier,
-                qListItemSave,
+                qLisItem,
                 numCheckedItemsRemember,
                 showUncheckedItemsRemember,
                 onCheckBoxChangeRemember,
                 onListItemValueChangeRemember,
-                onFocusChangeRemember,
+                eventEmitterRemember,
                 onDoneClickRemember
 
             )
+        }
+
+        item {
+            Box(modifier = Modifier.height(400.dp)) {
+                Text(text = "")
+            }
         }
     }
 }
@@ -293,7 +372,7 @@ fun QListItemColumnComponent(
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
     onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
-    onFocusMode: (QListItemType.QListItemCheckBox) -> Unit,
+    eventEmitter: (event: DetailViewModelEvent) -> Unit,
     onDoneClick: () -> Unit
 ) {
     when (qLisItem.typeItem) {
@@ -304,7 +383,7 @@ fun QListItemColumnComponent(
                 model = qListItemCheckBox,
                 onCheckBoxCheckedChange = { onCheckBoxChange(qListItemCheckBox) },
                 onListItemValueChange = { onListItemValueChange(qListItemCheckBox, it) },
-                onFocusMode = onFocusMode
+                eventEmitter = eventEmitter
             )
         }
         QListItemType.QListItemTypeEnum.QListItemDoneTitle -> {
@@ -334,8 +413,8 @@ fun QListItemColumnComponent(
 fun ListScreenPreview() {
     One4allTheme {
         ListScreen(object : IListViewModel {
-            override val uiState: MutableState<QListCompose?>
-                get() = mutableStateOf<QListCompose?>(null)
+            override val uiState: MutableState<QListCompose>
+                get() = mutableStateOf(QListCompose())
 
             override val isCreationMode: Boolean
                 get() = false
@@ -361,6 +440,8 @@ fun ListScreenPreview() {
             ) {}
 
             override fun addItem() {}
+            override fun onEventReceived(detailViewModelEvent: DetailViewModelEvent) {
+            }
         })
     }
 }

@@ -1,6 +1,7 @@
 package com.unatxe.quicklist.entities
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.unatxe.quicklist.domain.entities.QList
@@ -9,11 +10,15 @@ import org.joda.time.DateTime
 
 data class QListCompose(
     val id: Int = 0,
-    val name: String,
-    val isFavourite: MutableState<Boolean>,
-    val items: SnapshotStateList<QListItemType>,
-    val createdAt: DateTime,
-    val updatedAt: MutableState<DateTime>
+    val name: String = "",
+    val isFavourite: MutableState<Boolean> = mutableStateOf(false),
+    val items: SnapshotStateList<QListItemType> = mutableStateListOf(),
+    val createdAt: DateTime = DateTime(),
+    val updatedAt: MutableState<DateTime> = mutableStateOf(DateTime()),
+    val isInitialized: MutableState<Boolean> = mutableStateOf(false),
+    val componentSelected: MutableState<QListItemType.QListItemCheckBox?> = mutableStateOf(null),
+    val itemIsSelected: MutableState<Boolean> = mutableStateOf(false),
+    val isEditMode: MutableState<Boolean> = mutableStateOf(false)
 ) {
 
     fun getTotalAndChecked(): String {
@@ -30,8 +35,13 @@ data class QListCompose(
     }
 
     fun update(from: QListCompose) {
-        isFavourite.value = from.isFavourite.value
-        updatedAt.value = from.updatedAt.value
+        if (isFavourite.value != from.isFavourite.value) {
+            isFavourite.value = from.isFavourite.value
+        }
+        if (updatedAt.value != from.updatedAt.value) {
+            updatedAt.value = from.updatedAt.value
+        }
+
         items.update(from.items)
     }
 
@@ -49,6 +59,7 @@ data class QListCompose(
                 id = qList.id,
                 name = qList.name,
                 isFavourite = mutableStateOf(qList.isFavourite),
+                isInitialized = mutableStateOf(true),
                 items = QListItemType.from(qList.items),
                 createdAt = qList.createdAt,
                 updatedAt = mutableStateOf(qList.updatedAt)

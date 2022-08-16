@@ -22,10 +22,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 @Stable
@@ -39,7 +38,7 @@ class ListViewModel @Inject constructor(
 
     private val idList: Int
 
-    override var uiState = mutableStateOf<QListCompose?>(null)
+    override var uiState = mutableStateOf(QListCompose())
         private set
 
     override var numCheckedItems: MutableState<Int> = mutableStateOf(0)
@@ -61,11 +60,12 @@ class ListViewModel @Inject constructor(
         if (idList != NO_VALUE) {
             viewModelScope.launch(Dispatchers.IO) {
                 getListUseCase.invoke(idList).collect {
-                    Log.d("DetailViewModel", "List updated")
+                    Log.d("Test", "List updated")
                     val mapped = QListCompose.from(it)
-                    if (uiState.value == null) {
+                    withContext(Dispatchers.Main) {
                         uiState.value = mapped
                     }
+
                     itemListInitialState.evenArray(mapped.items)
                     itemListInitialState.update(mapped.items)
 
@@ -101,8 +101,8 @@ class ListViewModel @Inject constructor(
     }
 
     private fun showItemsDone() {
-        numCheckedItems.value = itemListInitialState
-            .count { it is QListItemType.QListItemCheckBox && it.checked.value }
+        numCheckedItems.value = uiState.value?.items
+            ?.count { it is QListItemType.QListItemCheckBox && it.checked.value } ?: 0
     }
 
     override fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox) {
@@ -130,6 +130,7 @@ class ListViewModel @Inject constructor(
             timer.schedule(
                 object : TimerTask() {
                     override fun run() {
+                        Log.d("Test", "Update Item Text")
                         testTask.remove(qListItem)
                         qListItem.text.value = valueItem
                         val qListItemUpdated = QListItemType.to(qListItem)
@@ -138,7 +139,7 @@ class ListViewModel @Inject constructor(
                         }
                     }
                 },
-                2000
+                500
             )
         }
     }
@@ -158,10 +159,70 @@ class ListViewModel @Inject constructor(
 
     override fun addItem() {
     }
+
+    override fun onEventReceived(detailViewModelEvent: DetailViewModelEvent) {
+        when (detailViewModelEvent) {
+            is DetailViewModelEvent.FocusRequest -> {
+                processFocusRequest(detailViewModelEvent.qListItemCheckBox)
+            }
+            is DetailViewModelEvent.EditRequest -> {
+                detailViewModelEvent.qListItemCheckBox?.let {
+                    processFocusRequest(it, true)
+                }
+                processEditRequest()
+            }
+            is DetailViewModelEvent.ListItemValueChange -> onListItemValueChange(
+                detailViewModelEvent.itemCheckBox,
+                detailViewModelEvent.textChanged
+            )
+        }
+    }
+
+    private fun processFocusRequest(
+        qListItemCheckBox: QListItemType.QListItemCheckBox,
+        force: Boolean = false
+    ) {
+        if (force) {
+            qListItemCheckBox.isFocused.value = true
+        } else {
+            qListItemCheckBox.isFocused.value = qListItemCheckBox.isFocused.value.not()
+        }
+
+        uiState.value.isEditMode.value = false
+        qListItemCheckBox.isEditMode.value = false
+        uiState.value.itemIsSelected.value = qListItemCheckBox.isFocused.value
+
+        itemListInitialState.forEach {
+            if (it is QListItemType.QListItemCheckBox && it.id != qListItemCheckBox.id && it.isFocused.value) {
+                it.isFocused.value = false
+                it.isEditMode.value = false
+            }
+        }
+
+        if (qListItemCheckBox.isFocused.value) {
+            uiState.value.componentSelected.value = qListItemCheckBox
+        } else {
+            uiState.value.componentSelected.value = null
+        }
+    }
+
+    private fun processEditRequest() {
+        val itemSelected = itemListInitialState.find {
+            if (it is QListItemType.QListItemCheckBox) {
+                it.isFocused.value
+            } else {
+                false
+            }
+        } as QListItemType.QListItemCheckBox?
+        itemSelected?.let {
+            it.isEditMode.value = it.isEditMode.value.not()
+            uiState.value.isEditMode.value = it.isEditMode.value
+        }
+    }
 }
 
 interface IListViewModel {
-    val uiState: MutableState<QListCompose?>
+    val uiState: MutableState<QListCompose>
     val isCreationMode: Boolean
     var showUncheckedItems: MutableState<Boolean>
     var numCheckedItems: MutableState<Int>
@@ -174,4 +235,15 @@ interface IListViewModel {
 
     fun onListItemValueChange(qListItem: QListItemType.QListItemCheckBox, valueItem: String)
     fun addItem()
+
+    fun onEventReceived(detailViewModelEvent: DetailViewModelEvent)
+}
+
+sealed class DetailViewModelEvent {
+    class FocusRequest(val qListItemCheckBox: QListItemType.QListItemCheckBox) : DetailViewModelEvent()
+    class EditRequest(val qListItemCheckBox: QListItemType.QListItemCheckBox? = null) : DetailViewModelEvent()
+    class ListItemValueChange(
+        val itemCheckBox: QListItemType.QListItemCheckBox,
+        val textChanged: String
+    ) : DetailViewModelEvent()
 }
