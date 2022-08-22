@@ -12,9 +12,13 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -45,12 +49,12 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
@@ -129,9 +133,6 @@ fun ListScreen(viewModel: IListViewModel) {
                             showUncheckedItems = viewModel.showUncheckedItems,
                             onCheckBoxChange = {
                                 (viewModel::onCheckBoxChange)(it)
-                            },
-                            onListItemValueChange = { itemCheckBox, value ->
-                                (viewModel::onListItemValueChange)(itemCheckBox, value)
                             },
                             eventEmitter = { events ->
 
@@ -235,27 +236,16 @@ fun QListItemLazyComponent(
     numCheckedItems: MutableState<Int>,
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
-    onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
     eventEmitter: (event: DetailViewModelEvent) -> Unit,
     onDoneClick: () -> Unit
 ) {
     val listState = rememberLazyListState() //
 
-    var userScrollEnabled by remember { mutableStateOf(true) }
+    var userScrollDisabled: MutableState<Boolean> = remember { uiState.isEditMode }
 
-    /*val editMode by remember {
-        derivedStateOf {
-            uiState.isEditMode.value
-        }
-    }*/
+    val componentedSelected = remember { uiState.componentSelected }
 
-   /* val selectedMode by remember {
-        derivedStateOf {
-            uiState.componentSelected.value != null
-        }
-    }*/
-
-    if (uiState.componentSelected.value != null) {
+    if (componentedSelected.value != null) {
         Log.d("Test", "Selected Mode ${uiState.componentSelected.value!!.text}")
         LaunchedEffect(Unit) {
             delay(100)
@@ -263,29 +253,25 @@ fun QListItemLazyComponent(
             listState.scrollToItem(index)
         }
     }
-    if (uiState.isEditMode.value) {
-        Log.d("Test", "EditMode ${uiState.componentSelected.value!!.text}")
-       // userScrollEnabled = false
+
+    if (userScrollDisabled.value) {
         LaunchedEffect(Unit) {
             delay(100)
             val index = uiState.items.indexOf(uiState.componentSelected.value!!)
-            listState.scrollToItem(index + 1)
+            listState.scrollToItem(index)
         }
-    } else {
-       // userScrollEnabled = true
     }
 
     LazyColumnComponent(
         listState,
         modifier,
-        userScrollEnabled,
         uiState,
         numCheckedItems,
         showUncheckedItems,
         onCheckBoxChange,
-        onListItemValueChange,
         eventEmitter,
-        onDoneClick
+        onDoneClick,
+        userScrollDisabled
     )
 }
 
@@ -294,19 +280,18 @@ fun QListItemLazyComponent(
 fun LazyColumnComponent(
     listState: LazyListState,
     modifier: Modifier,
-    userScrollEnabled: Boolean,
     uiState: QListCompose,
     numCheckedItems: MutableState<Int>,
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
-    onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
     eventEmitter: (event: DetailViewModelEvent) -> Unit,
-    onDoneClick: () -> Unit
+    onDoneClick: () -> Unit,
+    userScrollDisabled: MutableState<Boolean>
 ) {
     LazyColumn(
         state = listState,
         modifier = modifier,
-        userScrollEnabled = userScrollEnabled
+        userScrollEnabled = userScrollDisabled.value.not() // uiState.isEditMode.value,
     ) {
         Modifier.modifierLocalConsumer {
             Log.d("TAG", "TAG")
@@ -335,21 +320,20 @@ fun LazyColumnComponent(
             val onDoneClickRemember = remember {
                 onDoneClick
             }
-            val onListItemValueChangeRemember = remember {
-                onListItemValueChange
-            }
 
             val eventEmitterRemember = remember {
                 eventEmitter
             }
+            val qListItemRemember = remember {
+                qLisItem
+            }
 
             QListItemColumnComponent(
                 modifier,
-                qLisItem,
+                qListItemRemember,
                 numCheckedItemsRemember,
                 showUncheckedItemsRemember,
                 onCheckBoxChangeRemember,
-                onListItemValueChangeRemember,
                 eventEmitterRemember,
                 onDoneClickRemember
 
@@ -357,8 +341,15 @@ fun LazyColumnComponent(
         }
 
         item {
-            Box(modifier = Modifier.height(400.dp)) {
-                Text(text = "")
+            BoxWithConstraints(modifier = Modifier.height(400.dp)) {
+                Image(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                    alignment = Alignment.BottomCenter,
+                    painter = painterResource(id = R.drawable.item_list_empty),
+                    contentDescription = stringResource(
+                        id = R.string.item_list_empty
+                    )
+                )
             }
         }
     }
@@ -371,7 +362,6 @@ fun QListItemColumnComponent(
     numCheckedItems: MutableState<Int>,
     showUncheckedItems: MutableState<Boolean>,
     onCheckBoxChange: (QListItemType.QListItemCheckBox) -> Unit,
-    onListItemValueChange: (QListItemType.QListItemCheckBox, String) -> Unit,
     eventEmitter: (event: DetailViewModelEvent) -> Unit,
     onDoneClick: () -> Unit
 ) {
@@ -381,8 +371,7 @@ fun QListItemColumnComponent(
             QListDetailCheckItemComponent(
                 modifier = modifier,
                 model = qListItemCheckBox,
-                onCheckBoxCheckedChange = { onCheckBoxChange(qListItemCheckBox) },
-                onListItemValueChange = { onListItemValueChange(qListItemCheckBox, it) },
+                onCheckBoxCheckedChange = onCheckBoxChange,
                 eventEmitter = eventEmitter
             )
         }
@@ -434,10 +423,6 @@ fun ListScreenPreview() {
             override fun onBackClicked() {}
 
             override fun onFavoriteClick(qListCompose: QListCompose) {}
-            override fun onListItemValueChange(
-                qListItem: QListItemType.QListItemCheckBox,
-                valueItem: String
-            ) {}
 
             override fun addItem() {}
             override fun onEventReceived(detailViewModelEvent: DetailViewModelEvent) {

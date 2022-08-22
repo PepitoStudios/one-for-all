@@ -1,6 +1,8 @@
 package com.unatxe.quicklist.entities
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.unatxe.quicklist.domain.entities.QListItem
@@ -27,6 +29,7 @@ sealed class QListItemType(
         val checked: MutableState<Boolean>,
         val position: Int = id,
         val idList: Int,
+        val isCheckBoxEnabled: MutableState<Boolean> = mutableStateOf(true),
         val isEditMode: MutableState<Boolean> = mutableStateOf(false),
         val isFocused: MutableState<Boolean> = mutableStateOf(false)
 
@@ -61,7 +64,7 @@ sealed class QListItemType(
             val sorted = items.sortedBy {
                 it.id
             }.map {
-                QListItemType.QListItemCheckBox(
+                QListItemCheckBox(
                     it.id,
                     mutableStateOf(it.text),
                     mutableStateOf(it.checked),
@@ -85,7 +88,7 @@ sealed class QListItemType(
         }
 
         public fun to(
-            qListItem: QListItemType.QListItemCheckBox
+            qListItem: QListItemCheckBox
         ): QListItem {
             return QListItem(
                 qListItem.id,

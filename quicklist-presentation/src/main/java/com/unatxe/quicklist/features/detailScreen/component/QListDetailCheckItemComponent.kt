@@ -13,11 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -33,13 +30,10 @@ import com.unatxe.quicklist.ui.theme.One4allTheme
 @Composable
 fun QListDetailCheckItemComponent(
     model: QListItemType.QListItemCheckBox,
-    onCheckBoxCheckedChange: (Boolean) -> Unit,
-    onListItemValueChange: (String) -> Unit,
+    onCheckBoxCheckedChange: (QListItemType.QListItemCheckBox) -> Unit,
     eventEmitter: (event: DetailViewModelEvent) -> Unit,
     modifier: Modifier
 ) {
-    val editText = rememberSaveable { model.text }
-
     Row(
         modifier
             .background(
@@ -65,9 +59,14 @@ fun QListDetailCheckItemComponent(
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(checked = model.checked.value, onCheckedChange = {
-            onCheckBoxCheckedChange(it)
-        })
+        // Log.d("Test", "${editText.value} isEditMode: ${isEditMode.value}")
+        Checkbox(
+            checked = model.checked.value,
+            enabled = model.isCheckBoxEnabled.value,
+            onCheckedChange = {
+                onCheckBoxCheckedChange(model)
+            }
+        )
         var style = MaterialTheme.typography.bodyLarge
         if (model.checked.value) {
             style = style.copy(textDecoration = TextDecoration.LineThrough)
@@ -75,7 +74,7 @@ fun QListDetailCheckItemComponent(
         if (model.isEditMode.value) {
             QListDetailEditItemComponent(model, eventEmitter)
         } else {
-            Text(text = editText.value, style = style, modifier = Modifier.padding(16.dp))
+            Text(text = model.text.value, style = style, modifier = Modifier.padding(16.dp))
         }
     }
 }
@@ -94,7 +93,6 @@ fun QListDetailCheckItemComponentPreview() {
                 idList = 1
             ),
             onCheckBoxCheckedChange = {},
-            onListItemValueChange = {},
             eventEmitter = {},
             modifier = Modifier
         )

@@ -69,10 +69,10 @@ class ListViewModel @Inject constructor(
                     itemListInitialState.evenArray(mapped.items)
                     itemListInitialState.update(mapped.items)
 
-                    uiState.value?.items?.let { qListItemType ->
+                    uiState.value.items.let { qListItemType ->
                         qListItemType.evenArray(mapped.items)
                         qListItemType.sortPositions()
-                        uiState.value!!.update(mapped)
+                        uiState.value.update(mapped)
                     }
                     showItemsDone()
                     hideItemsDone()
@@ -91,18 +91,18 @@ class ListViewModel @Inject constructor(
 
     private fun hideItemsDone() {
         if (showUncheckedItems.value) {
-            uiState.value?.items?.evenArray(itemListInitialState)
+            uiState.value.items.evenArray(itemListInitialState)
         } else {
             val modifiedArray = itemListInitialState.filter {
                 (it is QListItemType.QListItemCheckBox && it.checked.value).not()
             }
-            uiState.value?.items?.evenArray(modifiedArray)
+            uiState.value.items.evenArray(modifiedArray)
         }
     }
 
     private fun showItemsDone() {
-        numCheckedItems.value = uiState.value?.items
-            ?.count { it is QListItemType.QListItemCheckBox && it.checked.value } ?: 0
+        numCheckedItems.value = uiState.value.items
+            .count { it is QListItemType.QListItemCheckBox && it.checked.value } ?: 0
     }
 
     override fun onCheckBoxChange(qLisItem: QListItemType.QListItemCheckBox) {
@@ -115,7 +115,7 @@ class ListViewModel @Inject constructor(
 
     private val testTask: MutableMap<QListItemType, Timer> = mutableMapOf()
 
-    override fun onListItemValueChange(
+    private fun onListItemValueChange(
         qListItem: QListItemType.QListItemCheckBox,
         valueItem: String
     ) {
@@ -130,7 +130,6 @@ class ListViewModel @Inject constructor(
             timer.schedule(
                 object : TimerTask() {
                     override fun run() {
-                        Log.d("Test", "Update Item Text")
                         testTask.remove(qListItem)
                         qListItem.text.value = valueItem
                         val qListItemUpdated = QListItemType.to(qListItem)
@@ -149,7 +148,7 @@ class ListViewModel @Inject constructor(
     }
 
     override fun onFavoriteClick(qListCompose: QListCompose) {
-        uiState.value?.let {
+        uiState.value.let {
             viewModelScope.launch(Dispatchers.IO) {
                 it.isFavourite.value = it.isFavourite.value.not()
                 updateListUseCase.invoke(QListCompose.to(it)).collect {}
@@ -193,9 +192,13 @@ class ListViewModel @Inject constructor(
         uiState.value.itemIsSelected.value = qListItemCheckBox.isFocused.value
 
         itemListInitialState.forEach {
-            if (it is QListItemType.QListItemCheckBox && it.id != qListItemCheckBox.id && it.isFocused.value) {
-                it.isFocused.value = false
-                it.isEditMode.value = false
+            if (it is QListItemType.QListItemCheckBox
+            ) {
+                if (it.id != qListItemCheckBox.id) {
+                    it.isFocused.value = false
+                    it.isEditMode.value = false
+                }
+                it.isCheckBoxEnabled.value = true
             }
         }
 
@@ -214,9 +217,17 @@ class ListViewModel @Inject constructor(
                 false
             }
         } as QListItemType.QListItemCheckBox?
-        itemSelected?.let {
-            it.isEditMode.value = it.isEditMode.value.not()
-            uiState.value.isEditMode.value = it.isEditMode.value
+
+        itemSelected?.let { itemSelected ->
+            val isEditMode = itemSelected.isEditMode.value.not()
+            itemSelected.isEditMode.value = isEditMode
+            uiState.value.isEditMode.value = isEditMode
+
+            itemListInitialState.forEach { qListItem ->
+                if (qListItem is QListItemType.QListItemCheckBox) {
+                    qListItem.isCheckBoxEnabled.value = isEditMode.not()
+                }
+            }
         }
     }
 }
@@ -233,15 +244,18 @@ interface IListViewModel {
     fun onBackClicked()
     fun onFavoriteClick(qListCompose: QListCompose)
 
-    fun onListItemValueChange(qListItem: QListItemType.QListItemCheckBox, valueItem: String)
     fun addItem()
 
     fun onEventReceived(detailViewModelEvent: DetailViewModelEvent)
 }
 
 sealed class DetailViewModelEvent {
-    class FocusRequest(val qListItemCheckBox: QListItemType.QListItemCheckBox) : DetailViewModelEvent()
-    class EditRequest(val qListItemCheckBox: QListItemType.QListItemCheckBox? = null) : DetailViewModelEvent()
+    class FocusRequest(
+        val qListItemCheckBox: QListItemType.QListItemCheckBox
+    ) : DetailViewModelEvent()
+    class EditRequest(
+        val qListItemCheckBox: QListItemType.QListItemCheckBox? = null
+    ) : DetailViewModelEvent()
     class ListItemValueChange(
         val itemCheckBox: QListItemType.QListItemCheckBox,
         val textChanged: String
