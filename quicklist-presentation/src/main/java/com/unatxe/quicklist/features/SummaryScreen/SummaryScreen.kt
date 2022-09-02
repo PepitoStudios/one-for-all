@@ -29,7 +29,8 @@ import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
 import com.unatxe.quicklist.components.QListSummaryComponent
 import com.unatxe.quicklist.components.search.SearchComponent
-import com.unatxe.quicklist.entities.QListCompose
+import com.unatxe.quicklist.entities.qList.QListView
+import com.unatxe.quicklist.entities.qList.QListViewImpl
 import com.unatxe.quicklist.helpers.ViewModelPreviewHelper.previewMainViewModel
 import com.unatxe.quicklist.ui.theme.One4allTheme
 import com.unatxe.quicklist.ui.theme.h3Medium
@@ -77,7 +78,7 @@ fun MainScreen(
                 val detailListClick: (id: Int) -> Unit = {
                     viewModel.listClicked(it)
                 }
-                val favouriteClick: (qListCompose: QListCompose) -> Unit = {
+                val favouriteClick: (qListCompose: QListView) -> Unit = {
                     viewModel.favouriteClicked(it)
                 }
 

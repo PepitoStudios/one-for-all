@@ -1,9 +1,6 @@
 package com.unatxe.quicklist.components
 
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
-import androidx.compose.animation.graphics.res.animatedVectorResource
-import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
-import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,11 +12,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,11 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.unatxe.quicklist.R
 import com.unatxe.quicklist.components.search.FavouriteIconComponent
-import com.unatxe.quicklist.entities.QListCompose
+import com.unatxe.quicklist.entities.qList.QListView
+import com.unatxe.quicklist.entities.qList.QListViewImpl
 import com.unatxe.quicklist.helpers.DateUtils
-import com.unatxe.quicklist.helpers.noRippleClickable
 import com.unatxe.quicklist.ui.theme.One4allTheme
 import com.unatxe.quicklist.ui.theme.bodyRegular
 import com.unatxe.quicklist.ui.theme.h5Bold
@@ -45,9 +39,9 @@ import org.joda.time.DateTime
 @Composable
 fun QListSummaryComponent(
     modifier: Modifier,
-    qList: QListCompose,
+    qList: QListView,
     onDetailListClick: (id: Int) -> Unit = {},
-    onFavoriteClick: (qListCompose: QListCompose) -> Unit = {}
+    onFavoriteClick: (qListCompose: QListView) -> Unit = {}
 ) {
     Card(
         modifier
@@ -85,7 +79,7 @@ fun QListSummaryComponent(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                     ) {
-                        FavouriteIconComponent(qList.isFavourite){
+                        FavouriteIconComponent(qList.isFavourite) {
                             onFavoriteClick(qList)
                         }
                         Text(qList.getTotalAndChecked(), style = bodyRegular)
@@ -102,7 +96,7 @@ fun QListSummaryComponentPreview() {
     One4allTheme {
         QListSummaryComponent(
             Modifier,
-            QListCompose(
+            QListViewImpl(
                 id = 1,
                 name = "Lista ejemplo",
                 isFavourite = remember { mutableStateOf(true) },

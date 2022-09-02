@@ -6,6 +6,4 @@ import dagger.hilt.components.SingletonComponent
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
-interface DomainModuleDependencies {
-
-}
+interface DomainModuleDependencies

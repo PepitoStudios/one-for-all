@@ -1,5 +1,6 @@
 package com.unatxe.quicklist.features.detailScreen.component
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -8,7 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,15 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.unatxe.quicklist.R
 import com.unatxe.quicklist.helpers.Animations
+import com.unatxe.quicklist.ui.theme.One4allTheme
 
 @Composable
-fun QListDetaulDoneItemComponent(
+fun QListDefaultDoneItemComponent(
     modifier: Modifier,
     text: String,
-    checkedItems: MutableState<Int>,
-    showDoneItems: MutableState<Boolean>
+    checkedItems: State<Int>,
+    showDoneItems: State<Boolean>
 ) {
     val rotation = remember { mutableStateOf(0) }
 
@@ -54,6 +57,21 @@ fun QListDetaulDoneItemComponent(
             imageVector = ImageVector.vectorResource(R.drawable.ic_arrow),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun ListScreenPreview() {
+    One4allTheme {
+        QListDefaultDoneItemComponent(
+            modifier = Modifier,
+            text = "Pepito",
+            checkedItems = remember { mutableStateOf(2) } ,
+            showDoneItems = remember { mutableStateOf(false) }
+
         )
     }
 }

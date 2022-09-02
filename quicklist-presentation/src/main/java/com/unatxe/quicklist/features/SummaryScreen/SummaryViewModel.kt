@@ -7,8 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unatxe.quicklist.domain.interactors.GetListsUseCase
 import com.unatxe.quicklist.domain.interactors.UpdateListUseCase
-import com.unatxe.quicklist.entities.QListCompose
-import com.unatxe.quicklist.entities.QListCompose.Companion.update
+import com.unatxe.quicklist.entities.qList.QListView
+import com.unatxe.quicklist.entities.qList.QListViewImpl
+import com.unatxe.quicklist.entities.qList.QListViewImpl.Companion.update
 import com.unatxe.quicklist.helpers.evenArray
 import com.unatxe.quicklist.navigation.NavigationDirections
 import com.unatxe.quicklist.navigation.NavigationManager
@@ -28,9 +29,9 @@ class MainViewModel @Inject constructor(
         navigationManager.navigate(NavigationDirections.ListScreen.listScreen(it))
     }
 
-    private val initialQList: MutableList<QListCompose> = mutableListOf()
+    private val initialQList: MutableList<QListViewImpl> = mutableListOf()
 
-    override var uiState = mutableStateListOf<QListCompose>()
+    override var uiState = mutableStateListOf<QListView>()
         private set
 
     var listToSearch = ""
@@ -49,10 +50,13 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    override fun favouriteClicked(listToUpdate: QListCompose) {
+    override fun favouriteClicked(listToUpdate: QListView) {
         viewModelScope.launch(Dispatchers.IO) {
-            listToUpdate.isFavourite.value = listToUpdate.isFavourite.value.not()
-            updateListUseCase.invoke(QListCompose.to(listToUpdate)).collect {
+            val mutableListToUpdate = initialQList.find {
+                listToUpdate.id == it.id
+            }
+            mutableListToUpdate!!.isFavourite.value = mutableListToUpdate.isFavourite.value.not()
+            updateListUseCase.invoke(QListViewImpl.to(mutableListToUpdate)).collect {
                 // val favouritePosition = uiState.indexOf(listToUpdate)
                 // uiState[favouritePosition].update(QListCompose.from(it))
             }
@@ -64,7 +68,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch((Dispatchers.IO)) {
             getListsUseCase().collect {
                 Log.d("MainViewModel", "List updated")
-                val updateListCompose = QListCompose.from(it)
+                val updateListCompose = QListViewImpl.from(it)
                 initialQList.evenArray(updateListCompose)
                 initialQList.update(updateListCompose)
                 searchChanged(listToSearch)
@@ -77,9 +81,9 @@ class MainViewModel @Inject constructor(
 interface IMainViewModel {
     fun listClicked(it: Int?)
     fun searchChanged(listToSearch: String)
-    fun favouriteClicked(it: QListCompose)
+    fun favouriteClicked(it: QListView)
 
     val updateList: Unit
 
-    val uiState: SnapshotStateList<QListCompose>
+    val uiState: SnapshotStateList<QListView>
 }

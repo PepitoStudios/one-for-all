@@ -10,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.unatxe.quicklist.R
@@ -17,7 +18,7 @@ import com.unatxe.quicklist.helpers.noRippleClickable
 
 @OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
-fun FavouriteIconComponent(isFavourite: MutableState<Boolean>, onFavoriteClick: () -> Unit) {
+fun FavouriteIconComponent(isFavourite: State<Boolean>, onFavoriteClick: () -> Unit) {
     val image = AnimatedImageVector.animatedVectorResource(
         R.drawable.heart_unchecked_to_checked
     )

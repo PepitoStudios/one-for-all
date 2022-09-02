@@ -2,7 +2,6 @@ package com.unatxe.quicklist.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.unatxe.quicklist.entities.QListItemType
+import com.unatxe.quicklist.entities.qList.item.QListItemViewCheckBoxImpl
+
 import com.unatxe.quicklist.features.detailScreen.DetailViewModelEvent
 import com.unatxe.quicklist.features.detailScreen.component.QListDetailEditItemComponent
 import com.unatxe.quicklist.ui.theme.One4allTheme
@@ -29,11 +29,13 @@ import com.unatxe.quicklist.ui.theme.One4allTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QListDetailCheckItemComponent(
-    model: QListItemType.QListItemCheckBox,
-    onCheckBoxCheckedChange: (QListItemType.QListItemCheckBox) -> Unit,
+    model: QListItemViewCheckBoxImpl,
     eventEmitter: (event: DetailViewModelEvent) -> Unit,
     modifier: Modifier
 ) {
+    val checkedChanged: (Boolean) -> Unit = {
+        eventEmitter(DetailViewModelEvent.CheckBoxChange(model))
+    }
     Row(
         modifier
             .background(
@@ -45,9 +47,6 @@ fun QListDetailCheckItemComponent(
             )
             .fillMaxWidth()
             .height(56.dp)
-            .clickable {
-                eventEmitter(DetailViewModelEvent.FocusRequest(model))
-            }
             .pointerInput(Unit) {
                 detectTapGestures(
                     onDoubleTap = {
@@ -59,13 +58,10 @@ fun QListDetailCheckItemComponent(
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Log.d("Test", "${editText.value} isEditMode: ${isEditMode.value}")
         Checkbox(
             checked = model.checked.value,
             enabled = model.isCheckBoxEnabled.value,
-            onCheckedChange = {
-                onCheckBoxCheckedChange(model)
-            }
+            onCheckedChange = remember { checkedChanged }
         )
         var style = MaterialTheme.typography.bodyLarge
         if (model.checked.value) {
@@ -85,14 +81,51 @@ fun QListDetailCheckItemComponent(
 fun QListDetailCheckItemComponentPreview() {
     One4allTheme {
         QListDetailCheckItemComponent(
-            model = QListItemType.QListItemCheckBox(
+            model = QListItemViewCheckBoxImpl(
                 id = 1,
                 text = remember { mutableStateOf("Test") },
                 checked = remember { mutableStateOf(false) },
                 isEditMode = remember { mutableStateOf(false) },
                 idList = 1
             ),
-            onCheckBoxCheckedChange = {},
+            eventEmitter = {},
+            modifier = Modifier
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun QListDetailCheckedItemComponentPreview() {
+    One4allTheme {
+        QListDetailCheckItemComponent(
+            model = QListItemViewCheckBoxImpl(
+                id = 1,
+                text = remember { mutableStateOf("Test") },
+                checked = remember { mutableStateOf(true) },
+                isEditMode = remember { mutableStateOf(false) },
+                idList = 1
+            ),
+            eventEmitter = {},
+            modifier = Modifier
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun QListDetailCheckedEditmodePreview() {
+    One4allTheme {
+        QListDetailCheckItemComponent(
+            model = QListItemViewCheckBoxImpl(
+                id = 1,
+                text = remember { mutableStateOf("Test") },
+                checked = remember { mutableStateOf(true) },
+                isEditMode = remember { mutableStateOf(true) },
+                idList = 1
+            ),
             eventEmitter = {},
             modifier = Modifier
         )
