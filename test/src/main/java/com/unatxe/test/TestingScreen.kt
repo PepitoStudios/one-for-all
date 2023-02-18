@@ -32,9 +32,10 @@ fun LazyList(arraytest: SnapshotStateList<Pair<Int,String>>, onAdd: ()-> Unit) {
 
     Column() {
         Log.d("Compose", "Column")
+        val listState = rememberLazyListState()
         LazyColumn(
             modifier = Modifier.height(500.dp),
-            state = rememberLazyListState()
+            state = listState
         ) {
             Log.d("COmpose", "LazyColumn")
             items(
