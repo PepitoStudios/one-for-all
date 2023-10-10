@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         minSdk = ConfigData.minSdkVersion
-        targetSdk = ConfigData.targetSdkVersion
+        testOptions.targetSdk = ConfigData.targetSdkVersion
 
         testInstrumentationRunner = "com.unatxe.quicklist.data.CustomTestRunner"
         consumerProguardFiles("consumer-rules.pro")

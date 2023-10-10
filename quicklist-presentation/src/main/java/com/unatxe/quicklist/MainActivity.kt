@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.Surface
@@ -13,10 +14,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.unatxe.quicklist.features.listScreen.ListScreen
 import com.unatxe.quicklist.features.listScreen.ListViewModel
 import com.unatxe.quicklist.features.mainScreen.MainScreen
@@ -40,7 +41,7 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         setContent {
-            val navController = rememberAnimatedNavController()
+            val navController = rememberNavController()
 
             navigationManager.commands.collectAsState().value.also { command ->
                 if (command.destination.isNotEmpty()) navController.navigate(command.destination)
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun MainActivity.TestFlow(navController: NavHostController) {
     val navigationCommand = NavigationDirections.ListScreen.listScreen(1)
-    AnimatedNavHost(
+    NavHost(
         navController = navController,
         // startDestination = NavigationDirections.mainScreen.destination
         startDestination = "listScreen?idList=1"
@@ -91,7 +92,7 @@ private fun MainActivity.TestFlow(navController: NavHostController) {
 @ExperimentalCoroutinesApi
 @Composable
 private fun MainActivity.NormalFlow(navController: NavHostController) {
-    AnimatedNavHost(
+    NavHost(
         navController = navController,
         startDestination = NavigationDirections.mainScreen.destination
     ) {
@@ -101,7 +102,7 @@ private fun MainActivity.NormalFlow(navController: NavHostController) {
                 when (initialState.destination.route) {
                     NavigationDirections.ListScreen.route ->
                         slideIntoContainer(
-                            AnimatedContentScope.SlideDirection.Left,
+                            AnimatedContentTransitionScope.SlideDirection.Left,
                             animationSpec = tween(700)
                         )
                     else -> null
@@ -111,7 +112,7 @@ private fun MainActivity.NormalFlow(navController: NavHostController) {
                 when (targetState.destination.route) {
                     NavigationDirections.ListScreen.route ->
                         slideOutOfContainer(
-                            AnimatedContentScope.SlideDirection.Left,
+                            AnimatedContentTransitionScope.SlideDirection.Left,
                             animationSpec = tween(700)
                         )
                     else -> null
@@ -121,7 +122,7 @@ private fun MainActivity.NormalFlow(navController: NavHostController) {
                 when (initialState.destination.route) {
                     NavigationDirections.ListScreen.route ->
                         slideIntoContainer(
-                            AnimatedContentScope.SlideDirection.Right,
+                            AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(700)
                         )
                     else -> null
@@ -131,7 +132,7 @@ private fun MainActivity.NormalFlow(navController: NavHostController) {
                 when (targetState.destination.route) {
                     NavigationDirections.ListScreen.route ->
                         slideOutOfContainer(
-                            AnimatedContentScope.SlideDirection.Right,
+                            AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(700)
                         )
                     else -> null
@@ -144,7 +145,7 @@ private fun MainActivity.NormalFlow(navController: NavHostController) {
         composable(
             NavigationDirections.ListScreen.route,
             arguments = NavigationDirections.ListScreen.listArguments,
-            enterTransition = {
+            /*enterTransition = {
                 when (initialState.destination.route) {
                     NavigationDirections.mainScreen.destination ->
                         slideIntoContainer(
@@ -173,8 +174,8 @@ private fun MainActivity.NormalFlow(navController: NavHostController) {
                         )
                     else -> null
                 }
-            },
-            popExitTransition = {
+            },*/
+            /*popExitTransition = {
                 when (targetState.destination.route) {
                     NavigationDirections.mainScreen.destination ->
                         slideOutOfContainer(
@@ -183,7 +184,7 @@ private fun MainActivity.NormalFlow(navController: NavHostController) {
                         )
                     else -> null
                 }
-            }
+            }*/
         ) { backStackEntry ->
             assert(backStackEntry.arguments != null)
             ListScreen(hiltViewModel<ListViewModel>())

@@ -18,7 +18,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 dependencies {
     implementation(GeneralDependencies.hiltCore)
     implementation(GeneralDependencies.coroutinesCore)
-    implementation("joda-time:joda-time:2.10.14")
+    implementation("joda-time:joda-time:2.12.5")
     kapt(GeneralDependencies.hiltCompiler)
 }
 

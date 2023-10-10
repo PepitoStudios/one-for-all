@@ -1,14 +1,14 @@
 import java.util.*
 
 object ConfigData {
-    const val compileSdkVersion = 32
+    const val compileSdkVersion = 34
     const val minSdkVersion = 21
-    const val buildToolsVersion = "32.1.0 rc1"
-    const val targetSdkVersion = 32
+    const val buildToolsVersion = "34.0.0"
+    const val targetSdkVersion = 34
     const val versionCode = 1
     const val versionName = "1.0"
     const val jvmVersion = "11"
-    const val gradle = "7.5-rc-5"
+    const val gradle = Versions.gradleDifferentSquema
 }
 
 object SonarCloud {

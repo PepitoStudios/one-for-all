@@ -11,7 +11,7 @@ object Compose {
     const val uiTestJunit = "androidx.compose.ui:ui-test-junit4:$compose"
     const val runtimeLiveData = "androidx.compose.runtime:runtime-livedata:$compose"
     const val material3 = "androidx.compose.material3:material3:$composeMaterial"
-    const val activityCompose = "androidx.activity:activity-compose:1.5.0"
+    const val activityCompose = "androidx.activity:activity-compose:1.7.2"
     const val hiltCompose = "androidx.hilt:hilt-navigation-compose:1.0.0"
     const val viewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:$androidXLifecyle"
     const val animationNavigationCompose = "com.google.accompanist:accompanist-navigation-animation:$composeNavigationAnimation"

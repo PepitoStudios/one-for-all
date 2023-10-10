@@ -28,14 +28,14 @@ android {
 
     signingConfigs {
         register("release") {
-            val path = projectDir.getAbsolutePath() + "/quicklist-release-sign.json"
+            val path = projectDir.absolutePath + "/quicklist-release-sign.json"
             val file = File(path)
             val jsonFile = groovy.json.JsonSlurper()
-                .parseText(file.readText()) as Map<String, String>
+                .parseText(file.readText()) as Map<*, *>
             storeFile = file("quicklist-release-sign.jks")
-            storePassword = jsonFile["storePassword"]
-            keyAlias = jsonFile["keyAlias"]
-            keyPassword = jsonFile["keyPassword"]
+            storePassword = jsonFile["storePassword"].toString()
+            keyAlias = jsonFile["keyAlias"].toString()
+            keyPassword = jsonFile["keyPassword"].toString()
         }
     }
 
@@ -71,7 +71,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = Versions.compose
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -92,8 +92,6 @@ dependencies {
     implementation(GeneralDependencies.androidXNavigationCompose)
     implementation(GeneralDependencies.androidXHiltNavigationCompose)
     implementation(GeneralDependencies.coroutinesAndroid)
-    implementation("androidx.compose.animation:animation-graphics:1.2.0")
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.2.0")
 
     testImplementation(Testing.jUnit)
     androidTestImplementation(Testing.extJUnit)
@@ -115,7 +113,9 @@ dependencies {
     implementation(Compose.activityCompose)
     implementation(Compose.viewModelCompose)
     implementation(Compose.runtimeLiveData)
-    implementation(Compose.animationNavigationCompose)
+    implementation("androidx.compose.animation:animation-graphics:1.5.3")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.5.3")
+    //implementation(Compose.animationNavigationCompose)
 
     implementation(GeneralDependencies.hilt)
     kapt(GeneralDependencies.hiltCompiler)
@@ -125,7 +125,7 @@ dependencies {
 
     implementation(Room.runtime)
 
-    implementation("joda-time:joda-time:2.10.14")
+    implementation("joda-time:joda-time:2.12.5")
 }
 
 kapt {
@@ -144,12 +144,12 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         freeCompilerArgs += "-P"
         freeCompilerArgs +=
             "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
-            project.buildDir.absolutePath + "/compose_metrics"
+            project.layout.buildDirectory.asFile.get().absolutePath + "/compose_metrics"
 
         freeCompilerArgs += "-P"
         freeCompilerArgs +=
             "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
-            project.buildDir.absolutePath + "/compose_metrics"
+            project.layout.buildDirectory.asFile.get().absolutePath + "/compose_metrics"
     }
 }
 

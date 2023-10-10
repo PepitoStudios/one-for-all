@@ -42,7 +42,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = Versions.compose
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -57,7 +57,7 @@ dependencies {
     implementation(Compose.ui)
     implementation(Compose.uiTollingPreview)
     implementation(Compose.material3)
-    implementation("androidx.compose.material:material:1.1.1")
+    implementation("androidx.compose.material:material:1.5.3")
     testImplementation(Testing.jUnit)
     androidTestImplementation(Testing.extJUnit)
     androidTestImplementation(Testing.espressoCore)

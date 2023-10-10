@@ -72,7 +72,7 @@ sonarqube {
         property("sonar.java.coveragePlugin", "jacoco")
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
-            "${project.buildDir}/reports/code-report/report.xml"
+            "${project.layout.buildDirectory}/reports/code-report/report.xml"
         )
         property("sonar.coverage.exclusions", androidCoverageExclusion)
         property("sonar.exclusions", androidCodeExclusion)
@@ -80,7 +80,7 @@ sonarqube {
 }
 
 tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }
 
 tasks.withType<Test> {
@@ -93,7 +93,7 @@ fun classDirectoriesTree(subprojects: List<Project>): List<File> {
     val files = mutableListOf<File>()
 
     subprojects.forEach {
-        val fileTree = fileTree(it.buildDir) {
+        val fileTree = fileTree(it.layout.buildDirectory) {
             include(
                 "**/classes/**/main/**",
                 "**/intermediates/classes/debug/**",
@@ -168,7 +168,7 @@ fun sourceDirectoriesTree(subprojects: List<Project>): ConfigurableFileCollectio
 fun executionDataTree(subprojects: List<Project>): List<File> {
     val files = mutableListOf<File>()
     subprojects.forEach {
-        val fileTree = fileTree(it.buildDir) {
+        val fileTree = fileTree(it.layout.buildDirectory) {
             include(
                 "outputs/code_coverage/**/*.ec",
                 "outputs/unit_test_code_coverage/**/testDebugUnitTest.exec"
@@ -183,11 +183,11 @@ fun JacocoReportsContainer.reports() {
     csv.required.set(false)
     xml.apply {
         required.set(true)
-        outputLocation.set(file("$buildDir/reports/code-report/report.xml"))
+        outputLocation.set(file("$layout.buildDirectory.buildDirectory/reports/code-report/report.xml"))
     }
     html.apply {
         required.set(true)
-        outputLocation.set(file("$buildDir/reports/code-report/html"))
+        outputLocation.set(file("$layout.buildDirectory.buildDirectory/reports/code-report/html"))
     }
 }
 
